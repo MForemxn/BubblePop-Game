@@ -29,9 +29,22 @@
 		91C4E0832D96098B003C27A1 /* BubblePop GameUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "BubblePop GameUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		91043BBC2D9F3B48009D55FC /* Exceptions for "BubblePop Game" folder in "BubblePop Game" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 91C4E0682D960989003C27A1 /* BubblePop Game */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		91C4E06B2D960989003C27A1 /* BubblePop Game */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				91043BBC2D9F3B48009D55FC /* Exceptions for "BubblePop Game" folder in "BubblePop Game" target */,
+			);
 			path = "BubblePop Game";
 			sourceTree = "<group>";
 		};
