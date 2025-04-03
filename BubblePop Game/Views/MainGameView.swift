@@ -5,72 +5,163 @@
 //  Created by Mason Foreman on 28/3/2025.
 //
 
-
 import SwiftUI
-import Combine
 
 struct MainGameView: View {
     @ObservedObject var gameState: GameState
-    @EnvironmentObject var settings: GameSettings
-    @State private var displaySize: CGSize = .zero
+    @ObservedObject var gameManager: GameManager
     @State private var showCountdown = true
-    @State private var countdownValue = 3
-    @State private var displayedPopScore: (id: UUID, score: Int, position: CGPoint)? = nil
-    @State private var lastUpdateTime: Date? = nil
-    @State private var displayTimer = Timer.publish(every: 1/60, on: .main, in: .common).autoconnect()
+    @State private var timeRemaining = 3
+    @State private var gameOverPopup = false
     
-    let bubbleSize: CGFloat = 60
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                // Game area
-                Color.clear
-                
-                // Bubbles
-                ForEach(Array(gameState.bubbles.enumerated()), id: \.element.id) { index, bubble in
-                    BubbleView(bubble: bubble, size: bubbleSize) {
-                        // Play sound
-                        SoundManager.shared.playSoundForBubble(bubble.color)
-                        
-                        // Show score animation
-                        let points = gameState.consecutiveSameColorPops > 0 && gameState.lastPoppedColor == bubble.color ?
-                            Int(Double(bubble.pointValue) * gameState.comboMultiplier) :
-                            bubble.pointValue
-                        displayedPopScore = (id: UUID(), score: points, position: bubble.position)
-                        
-                        // Pop the bubble
-                        gameState.popBubble(at: index)
+        ZStack {
+            Color(UIColor.systemBackground)
+                .ignoresSafeArea()
+            
+            // Game information at the top
+            VStack {
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text("Player: \(gameState.player.name)")
+                            .font(.headline)
+                        Text("Highest Score: \(gameState.highestScore)")
+                            .font(.subheadline)
+                    }
+                    
+                    Spacer()
+                    
+                    VStack(alignment: .trailing) {
+                        Text("Score: \(gameState.score)")
+                            .font(.headline)
+                        Text("Time: \(gameState.timeRemaining)")
+                            .font(.subheadline)
+                            .foregroundColor(gameState.timeRemaining <= 10 ? .red : .primary)
                     }
                 }
+                .padding()
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color(UIColor.secondarySystemBackground))
+                )
+                .padding([.horizontal, .top])
                 
-                // Score animation overlay
-                if let popScore = displayedPopScore {
-                    Text("+\(popScore.score)")
-                        .font(.title2)
-                        .bold()
-                        .foregroundColor(.yellow)
-                        .shadow(color: .black, radius: 1)
-                        .position(popScore.position)
-                        .transition(.scale)
-                        .onAppear {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
-                                if displayedPopScore?.id == popScore.id {
-                                    displayedPopScore = nil
-                                }
-                            }
-                        }
-                        .animation(.easeOut(duration: 0.7), value: displayedPopScore != nil)
-                }
-                
-                // Game info overlay
+                Spacer()
+            }
+            
+            // Bubbles
+            ForEach(gameState.bubbles) { bubble in
+                BubbleView(bubble: bubble)
+                    .position(bubble.position)
+                    .onTapGesture {
+                        gameManager.popBubble(bubble)
+                        gameState.soundManager.playPopSound()
+                        gameState.animationManager.animateBubblePop(at: bubble.position)
+                    }
+            }
+            
+            // Score popup animations
+            ForEach(gameState.animationManager.scorePopups) { popup in
+                Text(popup.text)
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(popup.color)
+                    .position(popup.position)
+                    .opacity(popup.opacity)
+                    .scaleEffect(popup.scale)
+            }
+            
+            // Bubble pop animations
+            ForEach(gameState.animationManager.bubblePopAnimations) { anim in
+                Circle()
+                    .fill(anim.color)
+                    .frame(width: anim.size, height: anim.size)
+                    .position(anim.position)
+                    .opacity(anim.opacity)
+                    .scaleEffect(anim.scale)
+            }
+            
+            // Countdown overlay
+            if showCountdown {
+                CountdownView(timeRemaining: $timeRemaining)
+            }
+            
+            // Game over popup
+            if gameOverPopup {
                 VStack {
-                    HStack {
-                        // Time
-                        HStack {
-                            Image(systemName: "clock")
-                            Text("\(gameState.timeRemaining)")
-                                .fontWeight(.bold)
-                        }
-                        .padding(8)
-                        .background(Capsule().fill(Color.black.opacity(0.7)))
+                    Text("Game Over!")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .padding()
+                    
+                    Text("Your score: \(gameState.score)")
+                        .font(.title2)
+                        .padding()
+                    
+                    Button(action: {
+                        gameOverPopup = false
+                        gameManager.showHighScores()
+                    }) {
+                        Text("View High Scores")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.blue)
+                            .cornerRadius(10)
+                    }
+                    .padding()
+                }
+                .frame(width: 300, height: 250)
+                .background(Color(UIColor.systemBackground))
+                .cornerRadius(20)
+                .shadow(radius: 10)
+            }
+        }
+        .onAppear {
+            // Start countdown
+            startCountdown()
+        }
+        .onReceive(timer) { _ in
+            if !showCountdown && gameState.gameRunning {
+                gameManager.updateGame()
+            }
+            
+            if gameState.timeRemaining <= 0 && !gameOverPopup && !showCountdown {
+                gameEnd()
+            }
+        }
+    }
+    
+    func startCountdown() {
+        showCountdown = true
+        timeRemaining = 3
+        
+        Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { countdownTimer in
+            if timeRemaining > 1 {
+                timeRemaining -= 1
+            } else {
+                countdownTimer.invalidate()
+                showCountdown = false
+                gameManager.startGame()
+            }
+        }
+    }
+    
+    func gameEnd() {
+        gameState.gameRunning = false
+        gameManager.endGame()
+        gameOverPopup = true
+    }
+}
+
+struct BubbleView: View {
+    let bubble: Bubble
+    
+    var body: some View {
+        Circle()
+            .fill(bubble.color)
+            .frame(width: bubble.size, height: bubble.size)
+            .shadow(color: .black.opacity(0.3), radius: 2, x: 1, y: 1)
+    }
+}
