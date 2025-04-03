@@ -10,12 +10,12 @@ import Foundation
 import AVFoundation
 
 class SoundManager {
-    static let shared = SoundManager()
-    
     private var audioPlayers: [URL: AVAudioPlayer] = [:]
     private var isEnabled: Bool = true
-    
-    private init() {
+    private let gameSettings: GameSettings
+
+    init(gameSettings: GameSettings) {
+        self.gameSettings = gameSettings
         // Set up audio session
         do {
             try AVAudioSession.sharedInstance().setCategory(.ambient, mode: .default)
@@ -66,26 +66,12 @@ class SoundManager {
             playSound(named: "pop_black")
         }
     }
-    
-    private let gameSettings: GameSettings
-
-    init(gameSettings: GameSettings) {
-        self.gameSettings = gameSettings
-        // Set up audio session
-        do {
-            try AVAudioSession.sharedInstance().setCategory(.ambient, mode: .default)
-            try AVAudioSession.sharedInstance().setActive(true)
-        } catch {
-            print("Failed to set up audio session: \(error)")
-        }
-    }
 
     func playBackgroundMusic() {
         playSound(named: "background_music", fileExtension: "mp3")
     }
 
     func stopBackgroundMusic() {
-        // Find background music player and stop it
         if let url = Bundle.main.url(forResource: "background_music", withExtension: "mp3"),
            let player = audioPlayers[url] {
             player.stop()
