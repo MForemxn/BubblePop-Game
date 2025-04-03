@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 import Combine
 
+@MainActor
 class GameManager: ObservableObject {
     @Published var currentView: AppView = .nameEntry
     
