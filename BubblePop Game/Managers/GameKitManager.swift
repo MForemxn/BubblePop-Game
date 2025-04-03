@@ -12,12 +12,13 @@ import SwiftUI
 class GameKitManager: NSObject, ObservableObject {
     static let shared = GameKitManager()
     @Published var isAuthenticated: Bool = false
-
+    @Published var playerName: String = ""
+    
     private override init() {
         super.init()
         authenticateLocalPlayer()
     }
-
+    
     func authenticateLocalPlayer() {
         let localPlayer = GKLocalPlayer.local
         localPlayer.authenticateHandler = { vc, error in
@@ -28,6 +29,7 @@ class GameKitManager: NSObject, ObservableObject {
             } else if localPlayer.isAuthenticated {
                 DispatchQueue.main.async {
                     self.isAuthenticated = true
+                    self.playerName = localPlayer.displayName
                     print("Game Center Authentication succeeded: \(localPlayer.displayName)")
                 }
             } else {
@@ -38,12 +40,11 @@ class GameKitManager: NSObject, ObservableObject {
             }
         }
     }
-
-    /// Reports the player's score to Game Center
+    
     func reportScore(_ score: Int, leaderboardID: String) {
         let gkScore = GKScore(leaderboardIdentifier: leaderboardID)
         gkScore.value = Int64(score)
-
+        
         GKScore.report([gkScore]) { error in
             if let error = error {
                 print("Error reporting score: \(error.localizedDescription)")
@@ -52,8 +53,7 @@ class GameKitManager: NSObject, ObservableObject {
             }
         }
     }
-
-    /// Presents the Game Center leaderboard
+    
     func showLeaderboard(leaderboardID: String) {
         guard let rootVC = UIApplication.shared.windows.first?.rootViewController else {
             print("Error: No root view controller available")
@@ -65,7 +65,6 @@ class GameKitManager: NSObject, ObservableObject {
         rootVC.present(gcViewController, animated: true)
     }
     
-    /// Helper function to present any Game Center view controller
     private func presentGameCenterViewController(_ viewController: UIViewController) {
         DispatchQueue.main.async {
             guard let rootVC = UIApplication.shared.windows.first?.rootViewController else {
