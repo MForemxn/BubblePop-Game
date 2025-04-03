@@ -77,3 +77,35 @@ extension View {
         self.modifier(CountdownAnimation())
     }
 }
+
+class AnimationManager {
+    // To manage animations shown in the game
+    private var activeAnimations: [UUID: CGPoint] = [:]
+    
+    func animateBubblePop(at position: CGPoint) {
+        // Track animation at this position
+        let id = UUID()
+        activeAnimations[id] = position
+        
+        // Remove after animation completes
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.activeAnimations.removeValue(forKey: id)
+        }
+    }
+    
+    func showScorePopup(text: String, position: CGPoint, color: Color) {
+        // Similar to bubble pop animation
+        let id = UUID()
+        activeAnimations[id] = position
+        
+        // Remove after animation completes
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) { [weak self] in
+            self?.activeAnimations.removeValue(forKey: id)
+        }
+    }
+    
+    func updateAnimations() {
+        // Called on game tick to update animation states
+        // Any cleanup or updates would go here
+    }
+}

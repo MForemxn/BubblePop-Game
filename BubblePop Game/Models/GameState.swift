@@ -28,6 +28,23 @@ class GameState: ObservableObject {
     private var screenSize: CGSize = .zero
     private var cancellables = Set<AnyCancellable>()
     
+    // In GameState.swift, add:
+    var bubbleManager: BubbleManager!
+    var scoreManager: ScoreManager!
+    var leaderboardManager: LeaderboardManager!
+    var soundManager: SoundManager!
+    var animationManager: AnimationManager!
+    var gameSettings: GameSettings!
+    var score: Int = 0
+    var player = Player(name: "", score: 0, date: Date())
+    var gameRunning = false
+
+    func resetGame() {
+        score = 0
+        gameRunning = false
+        // Other reset logic...
+    }
+    
     var comboMultiplier: Double {
         return consecutiveSameColorPops > 0 ? 1.5 : 1.0
     }
