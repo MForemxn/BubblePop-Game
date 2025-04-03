@@ -60,7 +60,7 @@ struct Bubble: Identifiable {
     let id = UUID()
     let color: BubbleColor
     let size: CGFloat
-    let position: CGPoint
+    var position: CGPoint
     var velocity: CGPoint = CGPoint(x: Double.random(in: -50...50), y: Double.random(in: -50...50))
     var isActive: Bool = true
     
