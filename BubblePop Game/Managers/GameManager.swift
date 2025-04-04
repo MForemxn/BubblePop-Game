@@ -28,8 +28,7 @@ class GameManager: ObservableObject {
         self.animationManager = animationManager
         
         let soundManager = SoundManager(gameSettings: gameSettings)
-        self.soundManager = soundManager
-        
+        self.soundManager = SoundManager(gameSettings: gameSettings)
         self.leaderboardManager = LeaderboardManager()
         
         // Create gameState

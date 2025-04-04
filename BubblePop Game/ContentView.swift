@@ -3,9 +3,9 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var settings = GameSettings() // ✅ Keep only one instance
     @StateObject private var gameState = GameState(
-        gameSettings: GameSettings(), // ✅ Ensure correct initialization
+        gameSettings: GameSettings(),
         animationManager: AnimationManager(),
-        soundManager: SoundManager()
+        soundManager: SoundManager(gameSettings: GameSettings)
     )
     
     @State private var showSettings = false
@@ -97,24 +97,26 @@ struct ContentView: View {
     }
     
     private var trailingBarItems: some View {
-        Group {
-            if currentView == .nameEntry {
-                HStack {
-                    Button(action: { currentView = .highScores }) {
-                        Image(systemName: "trophy")
-                    }
-                    Button(action: { currentView = .settings }) {
-                        Image(systemName: "gear")
+            AnyView(
+                Group {
+                    if currentView == .nameEntry {
+                        HStack {
+                            Button(action: { currentView = .highScores }) {
+                                Image(systemName: "trophy")
+                            }
+                            Button(action: { currentView = .settings }) {
+                                Image(systemName: "gear")
+                            }
+                        }
+                    } else if currentView == .game {
+                        Text("Score: \(gameState.currentScore)")
+                            .bold()
+                            .padding(.horizontal)
+                            .background(Capsule().fill(Color.white.opacity(0.3)))
                     }
                 }
-            } else if currentView == .game {
-                Text("Score: \(gameState.currentScore)")
-                    .bold()
-                    .padding(.horizontal)
-                    .background(Capsule().fill(Color.white.opacity(0.3)))
-            }
+                )
         }
-    }
 }
 
 #Preview {
