@@ -60,6 +60,12 @@ class BubbleManager: ObservableObject {
         bubbles = newBubbles
         gameState.bubbles = newBubbles // Sync with GameState
     }
+    
+    func refreshBubbles() {
+        // Clear old bubbles that are beyond the refresh threshold
+        // Add new bubbles as needed
+        updateBubbles()  // Assuming you already have this method
+    }
 
     func updateBubbles() {
         gameState.refreshBubbles() // Delegate to GameState

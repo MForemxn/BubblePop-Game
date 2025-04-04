@@ -88,7 +88,9 @@ class GameState: ObservableObject {
         // Set up bubble refresh timer
         bubbleRefreshTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             guard let self = self else { return }
-            self.bubbleManager.refreshBubbles()
+            Task { @MainActor in
+                self.bubbleManager.refreshBubbles()
+            }
         }
         
 
@@ -97,7 +99,9 @@ class GameState: ObservableObject {
     }
     
     func refreshBubbles() {
-        bubbleManager?.refreshBubbles()
+        Task { @MainActor in
+            self.bubbleManager.refreshBubbles()
+        }
     }
 
     func updateScreenSize(_ size: CGSize) {
