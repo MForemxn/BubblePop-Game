@@ -1,15 +1,32 @@
+//
+//  ContentView.swift
+//  BubblePop Game
+//
+//  Created by Mason Foreman on 28/3/2025.
+//
+
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var settings = GameSettings() // ✅ Keep only one instance
-    @StateObject private var gameState = GameState(
-        gameSettings: GameSettings(),
-        animationManager: AnimationManager(),
-        soundManager: SoundManager(gameSettings: GameSettings)
-    )
-    
-    @State private var showSettings = false
+    @StateObject private var settings = GameSettings() // Instantiate GameSettings directly
+    @StateObject private var gameManager: GameManager // Single GameManager instance
+    @StateObject private var gameState: GameState
     @State private var currentView: AppView = .nameEntry
+    
+    // Initialize all StateObjects in init()
+    init() {
+        let settingsInstance = GameSettings()
+        _settings = StateObject(wrappedValue: settingsInstance)
+        let animationManager = AnimationManager()
+        let soundManager = SoundManager(gameSettings: settingsInstance)
+        let gameStateInstance = GameState(
+            gameSettings: settingsInstance,
+            animationManager: animationManager,
+            soundManager: soundManager
+        )
+        _gameState = StateObject(wrappedValue: gameStateInstance)
+        _gameManager = StateObject(wrappedValue: GameManager(gameSettings: settingsInstance))
+    }
     
     enum AppView {
         case nameEntry, game, highScores, settings
@@ -27,13 +44,13 @@ struct ContentView: View {
                 switch currentView {
                 case .nameEntry:
                     NameEntryView(
-                        gameManager: GameManager(gameSettings: gameState.gameSettings), // ✅ Pass instance, not binding
+                        gameManager: gameManager, // Use the single gameManager instance
                         playerName: $gameState.playerName,
                         onStartGame: { currentView = .game }
                     )
                     .transition(.move(edge: .trailing))
                 case .game:
-                    MainGameView(gameState: gameState, gameManager: GameManager())
+                    MainGameView(gameState: gameState, gameManager: gameManager) // Reuse gameManager
                         .environmentObject(settings)
                         .onDisappear { gameState.resetGame() }
                         .transition(.opacity)
@@ -41,8 +58,7 @@ struct ContentView: View {
                     HighScoresView(onBack: { currentView = .nameEntry })
                         .transition(.opacity)
                 case .settings:
-                    SettingsView(onBack: { currentView = .nameEntry })
-                        .environmentObject(settings)
+                    SettingsView(gameSettings: settings) // Pass settings to SettingsView
                         .transition(.opacity)
                 }
             }
@@ -97,26 +113,26 @@ struct ContentView: View {
     }
     
     private var trailingBarItems: some View {
-            AnyView(
-                Group {
-                    if currentView == .nameEntry {
-                        HStack {
-                            Button(action: { currentView = .highScores }) {
-                                Image(systemName: "trophy")
-                            }
-                            Button(action: { currentView = .settings }) {
-                                Image(systemName: "gear")
-                            }
+        AnyView(
+            Group {
+                if currentView == .nameEntry {
+                    HStack {
+                        Button(action: { currentView = .highScores }) {
+                            Image(systemName: "trophy")
                         }
-                    } else if currentView == .game {
-                        Text("Score: \(gameState.currentScore)")
-                            .bold()
-                            .padding(.horizontal)
-                            .background(Capsule().fill(Color.white.opacity(0.3)))
+                        Button(action: { currentView = .settings }) {
+                            Image(systemName: "gear")
+                        }
                     }
+                } else if currentView == .game {
+                    Text("Score: \(gameState.currentScore)")
+                        .bold()
+                        .padding(.horizontal)
+                        .background(Capsule().fill(Color.white.opacity(0.3)))
                 }
-                )
-        }
+            }
+        )
+    }
 }
 
 #Preview {

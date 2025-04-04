@@ -8,19 +8,31 @@
 import Foundation
 
 class LeaderboardManager: ObservableObject {
-    @Published var highScores: [Player] = []
+    @Published private(set) var highScores: [Player] = []
     
-    init() {
-        loadHighScores()
+    private let maxHighScores: Int = 10  // Configurable limit for top scores
+    
+    init(loadFromPersistence: Bool = true) {
+        if loadFromPersistence {
+            loadHighScores()
+        }
     }
     
     func addScore(player: String, score: Int) {
         let newPlayer = Player(name: player, score: score, date: Date())
-        highScores.append(newPlayer)
-        highScores.sort { $0.score > $1.score }
-        if highScores.count > 10 { // Keep only top 10 scores
-            highScores = Array(highScores.prefix(10))
+        
+        // Insert the new score in the correct position to maintain sorted order
+        if let index = highScores.firstIndex(where: { $0.score < newPlayer.score }) {
+            highScores.insert(newPlayer, at: index)
+        } else {
+            highScores.append(newPlayer)
         }
+        
+        // Trim the list to the top N scores
+        if highScores.count > maxHighScores {
+            highScores = Array(highScores.prefix(maxHighScores))
+        }
+        
         saveHighScores()
     }
     
@@ -29,13 +41,15 @@ class LeaderboardManager: ObservableObject {
     }
     
     private func loadHighScores() {
-        highScores = Player.loadPlayers()
-        highScores.sort { $0.score > $1.score }
+        highScores = Player.loadPlayers().sorted { $0.score > $1.score }
     }
     
     private func saveHighScores() {
-        if let data = try? JSONEncoder().encode(highScores) {
+        do {
+            let data = try JSONEncoder().encode(highScores)
             UserDefaults.standard.set(data, forKey: "players")
+        } catch {
+            print("Failed to save high scores: \(error.localizedDescription)")
         }
     }
 }

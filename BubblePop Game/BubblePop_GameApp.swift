@@ -9,11 +9,12 @@ import SwiftUI
 
 @main
 struct BubblePop_GameApp: App {
-    @StateObject private var gameSettings = GameSettings()
+    @StateObject private var gameSettings: GameSettings
     @StateObject private var gameManager: GameManager
     
     init() {
         let settings = GameSettings()
+        _gameSettings = StateObject(wrappedValue: settings)
         _gameManager = StateObject(wrappedValue: GameManager(gameSettings: settings))
     }
     
@@ -33,7 +34,10 @@ struct BubblePop_GameApp: App {
             case .settings:
                 SettingsView(gameSettings: gameSettings)
             case .highScores:
-                HighScoresView(leaderboardManager: gameManager.leaderboardManager, gameManager: gameManager)
+                HighScoresView(
+                    leaderboardManager: gameManager.leaderboardManager,
+                    onBack: { gameManager.currentView = .nameEntry }
+                )
             }
         }
     }
