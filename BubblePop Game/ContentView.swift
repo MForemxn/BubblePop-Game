@@ -66,7 +66,6 @@ struct ContentView: View {
                 }
             }
             .navigationTitle(navigationTitle)
-            .navigationBarItems(leading: leadingBarItems, trailing: trailingBarItems)
             .navigationBarBackButtonHidden(true)
             .animation(.easeInOut, value: currentView)
             .sheet(isPresented: $gameState.gameOver) {
@@ -115,27 +114,6 @@ struct ContentView: View {
         }
     }
     
-    private var trailingBarItems: some View {
-        AnyView(
-            Group {
-                if currentView == .nameEntry {
-                    HStack {
-                        Button(action: { currentView = .highScores }) {
-                            Image(systemName: "trophy")
-                        }
-                        Button(action: { currentView = .settings }) {
-                            Image(systemName: "gear")
-                        }
-                    }
-                } else if currentView == .game {
-                    Text("Score: \(gameState.currentScore)")
-                        .bold()
-                        .padding(.horizontal)
-                        .background(Capsule().fill(Color.white.opacity(0.3)))
-                }
-            }
-        )
-    }
 }
 
 #Preview {
