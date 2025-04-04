@@ -1,12 +1,13 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var settings = GameSettings() // ✅ Keep only one instance
     @StateObject private var gameState = GameState(
-        gameSettings: GameSettings(maxBubbles: 15, gameDuration: 60), // Proper initialization
+        gameSettings: GameSettings(), // ✅ Ensure correct initialization
         animationManager: AnimationManager(),
         soundManager: SoundManager()
     )
-    @StateObject private var settings = GameSettings(maxBubbles: 15, gameDuration: 60)
+    
     @State private var showSettings = false
     @State private var currentView: AppView = .nameEntry
     
@@ -26,7 +27,7 @@ struct ContentView: View {
                 switch currentView {
                 case .nameEntry:
                     NameEntryView(
-                        gameManager: GameManager(gameSettings: $gameState.gameSettings),
+                        gameManager: GameManager(gameSettings: gameState.gameSettings), // ✅ Pass instance, not binding
                         playerName: $gameState.playerName,
                         onStartGame: { currentView = .game }
                     )

@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 
 class GameSettings: ObservableObject {
+    static let shared = GameSettings() // Singleton Instance
     // Published properties
     @Published var bubbleSpeed: BubbleSpeed {
         didSet {
