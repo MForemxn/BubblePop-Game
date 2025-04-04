@@ -1,69 +1,52 @@
-//
-//  ContentView.swift
-//  BubblePop Game
-//
-//  Created by Mason Foreman on 28/3/2025.
-//
-
-
-
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var gameState = GameState()
-    @StateObject private var settings = GameSettings.shared
+    @StateObject private var gameState = GameState(
+        gameSettings: GameSettings(maxBubbles: 15, gameDuration: 60), // Proper initialization
+        animationManager: AnimationManager(),
+        soundManager: SoundManager()
+    )
+    @StateObject private var settings = GameSettings(maxBubbles: 15, gameDuration: 60)
     @State private var showSettings = false
     @State private var currentView: AppView = .nameEntry
     
     enum AppView {
-        case nameEntry
-        case game
-        case highScores
-        case settings
+        case nameEntry, game, highScores, settings
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
-                // Background gradient
                 LinearGradient(
                     gradient: Gradient(colors: [Color.blue.opacity(0.3), Color.purple.opacity(0.3)]),
-                    startPoint: .top,
-                    endPoint: .bottom
+                    startPoint: .top, endPoint: .bottom
                 )
                 .edgesIgnoringSafeArea(.all)
                 
-                // Main content based on current view
-                if currentView == .nameEntry {
-                    NameEntryView(playerName: $gameState.playerName, onStartGame: {
-                        currentView = .game
-                    })
-                    .transition(.opacity)
-                } else if currentView == .game {
-                    MainGameView(gameState: gameState)
+                switch currentView {
+                case .nameEntry:
+                    NameEntryView(
+                        gameManager: GameManager(gameSettings: $gameState.gameSettings),
+                        playerName: $gameState.playerName,
+                        onStartGame: { currentView = .game }
+                    )
+                    .transition(.move(edge: .trailing))
+                case .game:
+                    MainGameView(gameState: gameState, gameManager: GameManager())
                         .environmentObject(settings)
-                        .onDisappear {
-                            gameState.resetGame()
-                        }
+                        .onDisappear { gameState.resetGame() }
                         .transition(.opacity)
-                } else if currentView == .highScores {
-                    HighScoreView(onBack: {
-                        currentView = .nameEntry
-                    })
-                    .transition(.opacity)
-                } else if currentView == .settings {
-                    SettingsView(onBack: {
-                        currentView = .nameEntry
-                    })
-                    .environmentObject(settings)
-                    .transition(.opacity)
+                case .highScores:
+                    HighScoresView(onBack: { currentView = .nameEntry })
+                        .transition(.opacity)
+                case .settings:
+                    SettingsView(onBack: { currentView = .nameEntry })
+                        .environmentObject(settings)
+                        .transition(.opacity)
                 }
             }
-            .navigationBarTitle(navigationTitle, displayMode: .inline)
-            .navigationBarItems(
-                leading: leadingBarItems,
-                trailing: trailingBarItems
-            )
+            .navigationTitle(navigationTitle)
+            .navigationBarItems(leading: leadingBarItems, trailing: trailingBarItems)
             .navigationBarBackButtonHidden(true)
             .animation(.easeInOut, value: currentView)
             .sheet(isPresented: $gameState.gameOver) {
@@ -85,19 +68,14 @@ struct ContentView: View {
                 )
             }
         }
-        .navigationViewStyle(StackNavigationViewStyle())
     }
     
     private var navigationTitle: String {
         switch currentView {
-        case .nameEntry:
-            return "BubblePop"
-        case .game:
-            return "Game in Progress"
-        case .highScores:
-            return "High Scores"
-        case .settings:
-            return "Settings"
+        case .nameEntry: return "BubblePop"
+        case .game: return "Game in Progress"
+        case .highScores: return "High Scores"
+        case .settings: return "Settings"
         }
     }
     
@@ -105,9 +83,7 @@ struct ContentView: View {
         Group {
             if currentView != .nameEntry {
                 Button(action: {
-                    if currentView == .game {
-                        gameState.resetGame()
-                    }
+                    if currentView == .game { gameState.resetGame() }
                     currentView = .nameEntry
                 }) {
                     HStack {
@@ -123,15 +99,10 @@ struct ContentView: View {
         Group {
             if currentView == .nameEntry {
                 HStack {
-                    Button(action: {
-                        currentView = .highScores
-                    }) {
+                    Button(action: { currentView = .highScores }) {
                         Image(systemName: "trophy")
                     }
-                    
-                    Button(action: {
-                        currentView = .settings
-                    }) {
+                    Button(action: { currentView = .settings }) {
                         Image(systemName: "gear")
                     }
                 }
