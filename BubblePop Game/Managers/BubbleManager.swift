@@ -48,18 +48,17 @@ class BubbleManager: ObservableObject {
     }
 
     func createBubbles() {
-        let numberOfBubbles = Int.random(in: 1...gameSettings.maxBubbles)
-        var newBubbles: [Bubble] = []
-
-        for _ in 0..<numberOfBubbles {
-            if let bubble = createBubble() {
-                newBubbles.append(bubble)
+            let numberOfBubbles = Int.random(in: 1...max(1, gameSettings.maxBubbles))
+            var newBubbles: [Bubble] = []
+            for _ in 0..<numberOfBubbles {
+                if let bubble = createBubble() {
+                    newBubbles.append(bubble)
+                    print("Bubble created at \(bubble.position)") // Debug log
+                }
             }
+            bubbles = newBubbles
+            gameState.bubbles = newBubbles
         }
-
-        bubbles = newBubbles
-        gameState.bubbles = newBubbles // Sync with GameState
-    }
     
     func refreshBubbles() {
         // Clear old bubbles that are beyond the refresh threshold
@@ -73,6 +72,10 @@ class BubbleManager: ObservableObject {
     }
 
     private func createBubble() -> Bubble? {
+        guard screenWidth > 0, screenHeight > 0 else {
+                    print("Invalid screen dimensions: \(screenWidth)x\(screenHeight)")
+                    return nil
+                }
         let bubbleColor = determineBubbleColor()
         let bubbleSize: CGFloat = 60
         let padding: CGFloat = 20
@@ -92,13 +95,15 @@ class BubbleManager: ObservableObject {
         let xPosition = CGFloat.random(in: leftSafeArea...(leftSafeArea + availableWidth))
         let yPosition = CGFloat.random(in: topSafeArea...(topSafeArea + availableHeight))
 
-        let position = CGPoint(x: xPosition, y: yPosition)
+        let position = CGPoint(x: CGFloat.random(in: safeArea.left...screenWidth - safeArea.right),
+                                      y: CGFloat.random(in: safeArea.top...screenHeight - safeArea.bottom))
         if isPositionOverlapping(position, size: bubbleSize) {
             return nil
         }
 
         let dx = CGFloat.random(in: -2...2)
         let dy = CGFloat.random(in: -2...2)
+        
 
         return Bubble(
             id: UUID(),

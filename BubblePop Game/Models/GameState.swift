@@ -10,11 +10,13 @@ import SwiftUI
 import Combine
 
 class GameState: ObservableObject {
+    
+    @Published var gameRunning: Bool = false
+    @Published var timeRemaining: Int = 0
+    @Published var bubbles: [Bubble] = []
     @Published var playerName: String = ""
     @Published var currentScore: Int = 0
-    @Published var timeRemaining: Int = 60
     @Published var isGameActive: Bool = false
-    @Published var bubbles: [Bubble] = []
     @Published var gameOver: Bool = false
     @Published var lastPoppedColor: BubbleColor? = nil
     @Published var consecutiveSameColorPops: Int = 0
@@ -32,7 +34,6 @@ class GameState: ObservableObject {
     var soundManager: SoundManager!
     var animationManager: AnimationManager!
     var player = Player(name: "", score: 0, date: Date())
-    var gameRunning = false
 
     init(gameSettings: GameSettings, animationManager: AnimationManager, soundManager: SoundManager) {
         self.gameSettings = gameSettings
@@ -105,8 +106,8 @@ class GameState: ObservableObject {
     }
 
     func updateScreenSize(_ size: CGSize) {
-        screenSize = size
-    }
+            screenSize = size
+        }
 
     func refreshments() {
         guard isGameActive else { return }

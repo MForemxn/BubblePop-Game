@@ -101,6 +101,11 @@ class GameManager: ObservableObject {
             color: bubble.color.color,
             size: bubble.size
         )
+        
+        // Check if all bubbles are gone
+        if gameState.bubbles.isEmpty {
+            endGame()
+        }
     }
     
     func endGame() {
