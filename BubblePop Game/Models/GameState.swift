@@ -58,6 +58,7 @@ class GameState: ObservableObject {
         bubbleRefreshTimer = nil
     }
 
+    
     var comboMultiplier: Double {
         return consecutiveSameColorPops > 0 ? 1.5 : 1.0
     }
@@ -87,11 +88,16 @@ class GameState: ObservableObject {
         // Set up bubble refresh timer
         bubbleRefreshTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             guard let self = self else { return }
-            self.refreshBubbles()
+            self.bubbleManager.refreshBubbles()
         }
+        
 
         // Initial bubble setup
         refreshBubbles()
+    }
+    
+    func refreshBubbles() {
+        bubbleManager?.refreshBubbles()
     }
 
     func updateScreenSize(_ size: CGSize) {
@@ -225,4 +231,5 @@ class GameState: ObservableObject {
             highestScore = currentScore
         }
     }
+    
 }
