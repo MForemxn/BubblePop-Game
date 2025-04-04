@@ -10,27 +10,31 @@ import SwiftUI
 @main
 struct BubblePop_GameApp: App {
     @StateObject private var gameSettings = GameSettings()
-    @StateObject private var gameState = GameState()
     @StateObject private var gameManager: GameManager
     
     init() {
         let settings = GameSettings()
-        let state = GameState()
-        state.gameSettings = settings
-        
-        // Use StateObject wrapper for initialization
-        let manager = GameManager(gameState: state, gameSettings: settings)
-        _gameSettings = StateObject(wrappedValue: settings)
-        _gameState = StateObject(wrappedValue: state)
-        _gameManager = StateObject(wrappedValue: manager)
+        _gameManager = StateObject(wrappedValue: GameManager(gameSettings: settings))
     }
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(gameSettings)
-                .environmentObject(gameState)
-                .environmentObject(gameManager)
+            switch gameManager.currentView {
+            case .nameEntry:
+                NameEntryView(
+                    gameManager: gameManager,
+                    playerName: $gameManager.gameState.playerName,
+                    onStartGame: {
+                        gameManager.currentView = .game
+                    }
+                )
+            case .game:
+                MainGameView(gameState: gameManager.gameState, gameManager: gameManager)
+            case .settings:
+                SettingsView(gameSettings: gameSettings)
+            case .highScores:
+                HighScoresView(leaderboardManager: gameManager.leaderboardManager, gameManager: gameManager)
+            }
         }
     }
 }

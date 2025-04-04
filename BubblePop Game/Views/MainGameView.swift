@@ -25,7 +25,7 @@ struct MainGameView: View {
             VStack {
                 HStack {
                     VStack(alignment: .leading) {
-                        Text("Player: \(gameState.player.name)")
+                        Text("Player: \(gameState.playerName)") // Changed player.name to playerName
                             .font(.headline)
                         Text("Highest Score: \(gameState.highestScore)")
                             .font(.subheadline)
@@ -34,7 +34,7 @@ struct MainGameView: View {
                     Spacer()
                     
                     VStack(alignment: .trailing) {
-                        Text("Score: \(gameState.score)")
+                        Text("Score: \(gameState.currentScore)") // Changed score to currentScore
                             .font(.headline)
                         Text("Time: \(gameState.timeRemaining)")
                             .font(.subheadline)
@@ -60,8 +60,8 @@ struct MainGameView: View {
                         gameState.soundManager.playPopSound()
                         gameState.animationManager.animateBubblePop(
                             at: bubble.position,
-                            color: bubble.color.color, // Pass the bubble's color
-                            size: bubble.size          // Pass the bubble's size
+                            color: bubble.color.color,
+                            size: bubble.size
                         )
                     }
             }
@@ -99,7 +99,7 @@ struct MainGameView: View {
                         .fontWeight(.bold)
                         .padding()
                     
-                    Text("Your score: \(gameState.score)")
+                    Text("Your score: \(gameState.currentScore)") // Changed score to currentScore
                         .font(.title2)
                         .padding()
                     
@@ -127,7 +127,7 @@ struct MainGameView: View {
             startCountdown()
         }
         .onReceive(timer) { _ in
-            if !showCountdown && gameState.gameRunning {
+            if !showCountdown && gameState.isGameActive { // Changed gameRunning to isGameActive
                 gameManager.updateGame()
             }
             
@@ -153,7 +153,7 @@ struct MainGameView: View {
     }
     
     func gameEnd() {
-        gameState.gameRunning = false
+        gameState.isGameActive = false // Changed gameRunning to isGameActive
         gameManager.endGame()
         gameOverPopup = true
     }

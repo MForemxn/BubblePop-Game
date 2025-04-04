@@ -34,6 +34,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				Views/Untitled.swift,
 			);
 			target = 91C4E0682D960989003C27A1 /* BubblePop Game */;
 		};

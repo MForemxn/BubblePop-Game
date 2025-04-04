@@ -19,16 +19,6 @@ class BubbleManager: ObservableObject {
     private var screenHeight: CGFloat = UIScreen.main.bounds.height
     private var safeArea: UIEdgeInsets = .zero // Safe area insets
 
-    // Bubble movement timer
-    private var bubbleMovementTimer: Timer?
-    private var bubbleSpeedMultiplier: CGFloat {
-        switch gameSettings.bubbleSpeed {
-        case .slow: return 0.5
-        case .medium: return 1.0
-        case .fast: return 1.5
-        }
-    }
-
     init(gameSettings: GameSettings, gameState: GameState) {
         self.gameSettings = gameSettings
         self.gameState = gameState
@@ -41,7 +31,6 @@ class BubbleManager: ObservableObject {
         )
         updateScreenDimensions()
     }
-    
 
     deinit {
         NotificationCenter.default.removeObserver(self)
@@ -54,6 +43,7 @@ class BubbleManager: ObservableObject {
             self.safeArea = UIApplication.shared.connectedScenes
                 .compactMap { ($0 as? UIWindowScene)?.keyWindow?.safeAreaInsets }
                 .first ?? .zero
+            self.gameState.updateScreenSize(CGSize(width: self.screenWidth, height: self.screenHeight))
         }
     }
 
@@ -68,21 +58,12 @@ class BubbleManager: ObservableObject {
         }
 
         bubbles = newBubbles
+        gameState.bubbles = newBubbles // Sync with GameState
     }
 
     func updateBubbles() {
-        let removalCount = Int.random(in: 0...bubbles.count / 2)
-        if removalCount > 0 {
-            bubbles.shuffle()
-            bubbles.removeFirst(removalCount)
-        }
-
-        let addCount = Int.random(in: 1...max(1, gameSettings.maxBubbles - bubbles.count))
-        for _ in 0..<addCount {
-            if let bubble = createBubble() {
-                bubbles.append(bubble)
-            }
-        }
+        gameState.refreshBubbles() // Delegate to GameState
+        bubbles = gameState.bubbles // Sync with GameState
     }
 
     private func createBubble() -> Bubble? {
@@ -115,10 +96,10 @@ class BubbleManager: ObservableObject {
 
         return Bubble(
             id: UUID(),
-            color: bubbleColor, // Corrected parameter name
+            color: bubbleColor,
             size: bubbleSize,
             position: position,
-            velocity: CGPoint(x: dx, y: dy) // Fixed movement logic
+            velocity: CGPoint(x: dx, y: dy)
         )
     }
 
@@ -146,51 +127,24 @@ class BubbleManager: ObservableObject {
 
     func removeBubble(_ bubble: Bubble) {
         bubbles.removeAll { $0.id == bubble.id }
+        gameState.bubbles = bubbles // Sync with GameState
     }
 
     func startBubbleMovement() {
-        bubbleMovementTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] _ in
-            Task { @MainActor in
-                self?.moveBubbles()
-            }
-        }
+        // Movement is handled by GameState, so this can be empty or removed
     }
 
     func stopBubbleMovement() {
-        bubbleMovementTimer?.invalidate()
-        bubbleMovementTimer = nil
+        // Movement is handled by GameState, so this can be empty or removed
     }
 
     func moveBubbles() {
-        guard !bubbles.isEmpty else { return }
-
-        let timeRatio = CGFloat(gameState.timeRemaining) / CGFloat(gameSettings.gameTime)
-        let speedFactor = 1.0 + (1.0 - timeRatio) * bubbleSpeedMultiplier
-
-        for i in bubbles.indices {
-            var bubble = bubbles[i]
-
-            let dx = bubble.velocity.x * speedFactor
-            let dy = bubble.velocity.y * speedFactor
-            var newPosition = CGPoint(x: bubble.position.x + dx, y: bubble.position.y + dy)
-
-            let radius = bubble.size / 2
-
-            if newPosition.x - radius < 0 || newPosition.x + radius > screenWidth {
-                bubble.velocity.x *= -1
-                newPosition.x = bubble.position.x + bubble.velocity.x * speedFactor
-            }
-
-            if newPosition.y - radius < 0 || newPosition.y + radius > screenHeight {
-                bubble.velocity.y *= -1
-                newPosition.y = bubble.position.y + bubble.velocity.y * speedFactor
-            }
-
-            bubbles[i].position = newPosition // Corrected mutation issue
-        }
+        gameState.updateBubblePositions(deltaTime: 0.05) // Delegate to GameState
+        bubbles = gameState.bubbles // Sync with GameState
     }
 
     func clearBubbles() {
         bubbles.removeAll()
+        gameState.bubbles = bubbles // Sync with GameState
     }
 }

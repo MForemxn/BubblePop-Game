@@ -13,7 +13,7 @@ import Combine
 class GameManager: ObservableObject {
     @Published var currentView: AppView = .nameEntry
     
-    let gameState: GameState
+    let gameState: GameState // Made non-optional
     let bubbleManager: BubbleManager
     let scoreManager: ScoreManager
     let leaderboardManager: LeaderboardManager
@@ -22,10 +22,16 @@ class GameManager: ObservableObject {
     
     private var gameTimer: Timer?
     
-    init(gameState: GameState, gameSettings: GameSettings) {
-        self.gameState = gameState
-        self.animationManager = AnimationManager()
-        self.soundManager = SoundManager(gameSettings: gameSettings)
+    init(gameSettings: GameSettings) {
+        let animationManager = AnimationManager()
+        let soundManager = SoundManager(gameSettings: gameSettings)
+        self.gameState = GameState(
+            gameSettings: gameSettings,
+            animationManager: animationManager,
+            soundManager: soundManager
+        )
+        self.animationManager = animationManager
+        self.soundManager = soundManager
         self.scoreManager = ScoreManager(gameState: gameState, animationManager: animationManager)
         self.bubbleManager = BubbleManager(gameSettings: gameSettings, gameState: gameState)
         self.leaderboardManager = LeaderboardManager()
@@ -85,8 +91,8 @@ class GameManager: ObservableObject {
         // Show animation
         animationManager.animateBubblePop(
             at: bubble.position,
-            color: bubble.color.color, // Pass the bubble's color
-            size: bubble.size          // Pass the bubble's size
+            color: bubble.color.color,
+            size: bubble.size
         )
     }
     
@@ -100,7 +106,7 @@ class GameManager: ObservableObject {
         soundManager.stopBackgroundMusic()
         
         // Save score
-        leaderboardManager.addScore(player: gameState.player.name, score: gameState.score)
+        leaderboardManager.addScore(player: gameState.player.name, score: gameState.currentScore)
         
         // Clear bubbles
         bubbleManager.clearBubbles()

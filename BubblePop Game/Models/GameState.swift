@@ -22,7 +22,7 @@ class GameState: ObservableObject {
 
     private var timer: Timer?
     private var bubbleRefreshTimer: Timer?
-    private let settings = GameSettings.shared
+    let gameSettings: GameSettings // Made public
     private var screenSize: CGSize = .zero
     private var cancellables = Set<AnyCancellable>()
 
@@ -31,18 +31,20 @@ class GameState: ObservableObject {
     var leaderboardManager: LeaderboardManager!
     var soundManager: SoundManager!
     var animationManager: AnimationManager!
-    var gameSettings: GameSettings!
-    var score: Int = 0
     var player = Player(name: "", score: 0, date: Date())
     var gameRunning = false
 
-    init() {
+    init(gameSettings: GameSettings, animationManager: AnimationManager, soundManager: SoundManager) {
+        self.gameSettings = gameSettings
+        self.animationManager = animationManager
+        self.soundManager = soundManager
+        self.timeRemaining = gameSettings.gameTime // Initialize with gameSettings
         loadHighestScore()
     }
 
     func resetGame() {
         currentScore = 0
-        timeRemaining = settings.gameTime
+        timeRemaining = gameSettings.gameTime
         isGameActive = false
         gameOver = false
         bubbles = []
@@ -68,7 +70,8 @@ class GameState: ObservableObject {
     func startGame() {
         resetGame()
         isGameActive = true
-        timeRemaining = settings.gameTime
+        gameRunning = true
+        timeRemaining = gameSettings.gameTime
 
         // Set up the game timer
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
@@ -95,7 +98,7 @@ class GameState: ObservableObject {
         screenSize = size
     }
 
-    func refreshBubbles() {
+    func refreshments() {
         guard isGameActive else { return }
 
         // Remove some random bubbles
@@ -107,7 +110,7 @@ class GameState: ObservableObject {
 
         // Add new bubbles
         let currentBubbleCount = bubbles.count
-        let numberOfBubblesToAdd = Int.random(in: 0...(settings.maxBubbles - currentBubbleCount))
+        let numberOfBubblesToAdd = Int.random(in: 0...(gameSettings.maxBubbles - currentBubbleCount))
 
         for _ in 0..<numberOfBubblesToAdd {
             if let newBubble = Bubble.generateRandomBubble(
@@ -148,7 +151,7 @@ class GameState: ObservableObject {
     }
 
     func updateBubbleVelocities() {
-        let timeRatio = Double(timeRemaining) / Double(settings.gameTime)
+        let timeRatio = Double(timeRemaining) / Double(gameSettings.gameTime)
         let speedFactor = 1.0 + (1.0 - timeRatio) * 2.0 // Speed increases as time decreases
 
         bubbles = bubbles.map { bubble in
@@ -201,6 +204,7 @@ class GameState: ObservableObject {
 
     func endGame() {
         isGameActive = false
+        gameRunning = false
         gameOver = true
 
         timer?.invalidate()

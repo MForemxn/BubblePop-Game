@@ -1,5 +1,5 @@
 //
-//  HighScoreView.swift
+//  HighScoresView.swift
 //  BubblePop Game
 //
 //  Created by Mason Foreman on 28/3/2025.
@@ -7,86 +7,45 @@
 
 import SwiftUI
 
-struct HighScoreView: View {
-    @ObservedObject var gameState: GameState
+struct HighScoresView: View {
     @ObservedObject var leaderboardManager: LeaderboardManager
-    @Environment(\.presentationMode) var presentationMode
+    @ObservedObject var gameManager: GameManager
     
     var body: some View {
-        VStack {
-            Text("High Scores")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .padding()
-            
-            if leaderboardManager.highScores.isEmpty {
-                Text("No scores yet!")
-                    .font(.title2)
-                    .foregroundColor(.gray)
+        NavigationView {
+            VStack {
+                Text("High Scores")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
                     .padding()
-            } else {
-                List {
-                    ForEach(0..<leaderboardManager.highScores.count, id: \.self) { index in
-                        HStack {
-                            Text("\(index + 1).")
-                                .font(.headline)
-                                .foregroundColor(.gray)
-                                .frame(width: 40, alignment: .leading)
-                            
-                            Text(leaderboardManager.highScores[index].name)
-                                .font(.headline)
-                            
-                            Spacer()
-                            
-                            Text("\(leaderboardManager.highScores[index].score)")
-                                .font(.headline)
-                                .foregroundColor(.blue)
-                        }
-                        .padding(.vertical, 4)
-                        .background(
-                            RoundedRectangle(cornerRadius: 5)
-                                .fill(index % 2 == 0 ? Color(UIColor.secondarySystemBackground) : Color(UIColor.systemBackground))
-                        )
+                
+                List(leaderboardManager.highScores) { player in
+                    HStack {
+                        Text(player.name)
+                        Spacer()
+                        Text("\(player.score)")
+                            .font(.headline)
+                        Text(player.date, style: .date)
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
                     }
                 }
+                .padding()
+                
+                Button(action: {
+                    gameManager.currentView = .nameEntry
+                }) {
+                    Text("Back to Menu")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(maxWidth: 200)
+                        .background(Color.blue)
+                        .cornerRadius(10)
+                }
+                .padding()
             }
-            
-            Button(action: {
-                startNewGame()
-            }) {
-                Text("Play Again")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .padding()
-                    .frame(width: 200)
-                    .background(Color.blue)
-                    .cornerRadius(10)
-            }
-            .padding()
-            
-            Button(action: {
-                presentationMode.wrappedValue.dismiss()
-            }) {
-                Text("Main Menu")
-                    .font(.headline)
-                    .foregroundColor(.blue)
-                    .padding()
-                    .frame(width: 200)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.blue, lineWidth: 2)
-                    )
-            }
-            .padding(.bottom)
+            .navigationBarTitle("High Scores", displayMode: .inline)
         }
-        .onAppear {
-            // Refresh the high scores
-            leaderboardManager.loadHighScores()
-        }
-    }
-    
-    func startNewGame() {
-        gameState.resetGame()
-        presentationMode.wrappedValue.dismiss()
     }
 }
