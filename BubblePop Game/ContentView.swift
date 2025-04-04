@@ -44,21 +44,24 @@ struct ContentView: View {
                 switch currentView {
                 case .nameEntry:
                     NameEntryView(
-                        gameManager: gameManager, // Use the single gameManager instance
+                        gameManager: gameManager,
                         playerName: $gameState.playerName,
                         onStartGame: { currentView = .game }
                     )
                     .transition(.move(edge: .trailing))
                 case .game:
-                    MainGameView(gameState: gameState, gameManager: gameManager) // Reuse gameManager
+                    MainGameView(gameState: gameState, gameManager: gameManager)
                         .environmentObject(settings)
                         .onDisappear { gameState.resetGame() }
                         .transition(.opacity)
                 case .highScores:
-                    HighScoresView(onBack: { currentView = .nameEntry })
-                        .transition(.opacity)
+                    HighScoresView(
+                        leaderboardManager: gameManager.leaderboardManager,
+                        onBack: { currentView = .nameEntry }
+                    )
+                    .transition(.opacity)
                 case .settings:
-                    SettingsView(gameSettings: settings) // Pass settings to SettingsView
+                    SettingsView(gameSettings: settings)
                         .transition(.opacity)
                 }
             }
