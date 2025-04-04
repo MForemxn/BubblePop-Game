@@ -83,7 +83,11 @@ class GameManager: ObservableObject {
         soundManager.playPopSound()
         
         // Show animation
-        animationManager.animateBubblePop(at: bubble.position)
+        animationManager.animateBubblePop(
+            at: bubble.position,
+            color: bubble.color.color, // Pass the bubble's color
+            size: bubble.size          // Pass the bubble's size
+        )
     }
     
     func endGame() {

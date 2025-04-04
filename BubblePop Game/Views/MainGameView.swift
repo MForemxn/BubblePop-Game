@@ -58,7 +58,11 @@ struct MainGameView: View {
                     .onTapGesture {
                         gameManager.popBubble(bubble)
                         gameState.soundManager.playPopSound()
-                        gameState.animationManager.animateBubblePop(at: bubble.position)
+                        gameState.animationManager.animateBubblePop(
+                            at: bubble.position,
+                            color: bubble.color.color, // Pass the bubble's color
+                            size: bubble.size          // Pass the bubble's size
+                        )
                     }
             }
             
@@ -160,7 +164,7 @@ struct BubbleView: View {
     
     var body: some View {
         Circle()
-            .fill(bubble.color)
+            .fill(bubble.color.color)
             .frame(width: bubble.size, height: bubble.size)
             .shadow(color: .black.opacity(0.3), radius: 2, x: 1, y: 1)
     }

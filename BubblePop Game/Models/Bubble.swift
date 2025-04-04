@@ -5,7 +5,6 @@
 //  Created by Mason Foreman on 28/3/2025.
 //
 
-
 import SwiftUI
 
 enum BubbleColor: String, CaseIterable {
@@ -57,15 +56,25 @@ enum BubbleColor: String, CaseIterable {
 }
 
 struct Bubble: Identifiable {
-    let id = UUID()
+    let id: UUID // Changed to let, but initialized in the init
     let color: BubbleColor
     let size: CGFloat
     var position: CGPoint
-    var velocity: CGPoint = CGPoint(x: Double.random(in: -50...50), y: Double.random(in: -50...50))
-    var isActive: Bool = true
+    var velocity: CGPoint // Added velocity as a property
+    var isActive: Bool
     
     var pointValue: Int {
         return color.pointValue
+    }
+    
+    // Updated initializer to include id, velocity, and isActive
+    init(id: UUID = UUID(), color: BubbleColor, size: CGFloat, position: CGPoint, velocity: CGPoint = CGPoint(x: Double.random(in: -50...50), y: Double.random(in: -50...50)), isActive: Bool = true) {
+        self.id = id
+        self.color = color
+        self.size = size
+        self.position = position
+        self.velocity = velocity
+        self.isActive = isActive
     }
     
     static func generateRandomBubble(in size: CGSize, existingBubbles: [Bubble], bubbleSize: CGFloat) -> Bubble? {
@@ -90,9 +99,12 @@ struct Bubble: Identifiable {
             
             if !hasOverlap {
                 return Bubble(
+                    id: UUID(), // Explicitly pass id
                     color: BubbleColor.randomBubbleColor(),
                     size: bubbleSize,
-                    position: position
+                    position: position,
+                    velocity: CGPoint(x: Double.random(in: -50...50), y: Double.random(in: -50...50)), // Pass velocity
+                    isActive: true
                 )
             }
         }

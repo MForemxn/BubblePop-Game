@@ -7,20 +7,90 @@
 
 import SwiftUI
 
-struct BubblePopAnimation: ViewModifier {
-    @State private var isAnimating = false
-    
-    func body(content: Content) -> some View {
-        content
-            .scaleEffect(isAnimating ? 1.5 : 1.0)
-            .opacity(isAnimating ? 0 : 1)
-            .animation(.easeOut(duration: 0.2), value: isAnimating)
-            .onAppear {
-                isAnimating = true
+// MARK: - Animation Data Models
+struct ScorePopup: Identifiable {
+    let id = UUID()
+    let text: String
+    let color: Color
+    let position: CGPoint
+    var opacity: Double // Made mutable for animation
+    var scale: Double   // Made mutable for animation
+}
+
+struct BubblePopAnimation: Identifiable {
+    let id = UUID()
+    let color: Color
+    let size: CGFloat
+    let position: CGPoint
+    var opacity: Double // Made mutable for animation
+    var scale: Double   // Made mutable for animation
+}
+
+// MARK: - Animation Manager
+class AnimationManager: ObservableObject {
+    @Published var scorePopups: [ScorePopup] = []
+    @Published var bubblePopAnimations: [BubblePopAnimation] = []
+
+    func showScorePopup(text: String, position: CGPoint, color: Color) {
+        // Create a new score popup
+        var popup = ScorePopup(
+            text: text,
+            color: color,
+            position: position,
+            opacity: 1.0,
+            scale: 1.0
+        )
+        scorePopups.append(popup)
+
+        // Animate the popup (fade out and scale up)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            if let index = self.scorePopups.firstIndex(where: { $0.id == popup.id }) {
+                withAnimation(.easeOut(duration: 1.0)) {
+                    self.scorePopups[index].opacity = 0.0
+                    self.scorePopups[index].scale = 1.5
+                }
             }
+        }
+
+        // Remove the popup after animation completes
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.1) {
+            self.scorePopups.removeAll { $0.id == popup.id }
+        }
+    }
+
+    func animateBubblePop(at position: CGPoint, color: Color, size: CGFloat) {
+        // Create a new bubble pop animation
+        var anim = BubblePopAnimation(
+            color: color,
+            size: size,
+            position: position,
+            opacity: 1.0,
+            scale: 1.0
+        )
+        bubblePopAnimations.append(anim)
+
+        // Animate the pop effect (fade out and scale up slightly)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            if let index = self.bubblePopAnimations.firstIndex(where: { $0.id == anim.id }) {
+                withAnimation(.easeOut(duration: 0.5)) {
+                    self.bubblePopAnimations[index].opacity = 0.0
+                    self.bubblePopAnimations[index].scale = 1.2
+                }
+            }
+        }
+
+        // Remove the animation after completion
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            self.bubblePopAnimations.removeAll { $0.id == anim.id }
+        }
+    }
+
+    func updateAnimations() {
+        // Optional: Add any additional cleanup or updates if needed
     }
 }
 
+// MARK: - Optional View Modifiers (Retained for Future Use)
 struct ScoreAnimation: ViewModifier {
     let score: Int
     @State private var offset: CGFloat = -50
@@ -65,47 +135,11 @@ struct CountdownAnimation: ViewModifier {
 }
 
 extension View {
-    func bubblePopEffect() -> some View {
-        self.modifier(BubblePopAnimation())
-    }
-    
     func scorePopEffect(score: Int) -> some View {
         self.modifier(ScoreAnimation(score: score))
     }
     
     func countdownEffect() -> some View {
         self.modifier(CountdownAnimation())
-    }
-}
-
-class AnimationManager {
-    // To manage animations shown in the game
-    private var activeAnimations: [UUID: CGPoint] = [:]
-    
-    func animateBubblePop(at position: CGPoint) {
-        // Track animation at this position
-        let id = UUID()
-        activeAnimations[id] = position
-        
-        // Remove after animation completes
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            self?.activeAnimations.removeValue(forKey: id)
-        }
-    }
-    
-    func showScorePopup(text: String, position: CGPoint, color: Color) {
-        // Similar to bubble pop animation
-        let id = UUID()
-        activeAnimations[id] = position
-        
-        // Remove after animation completes
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) { [weak self] in
-            self?.activeAnimations.removeValue(forKey: id)
-        }
-    }
-    
-    func updateAnimations() {
-        // Called on game tick to update animation states
-        // Any cleanup or updates would go here
     }
 }

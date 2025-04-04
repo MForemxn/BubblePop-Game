@@ -21,7 +21,13 @@ class BubbleManager: ObservableObject {
 
     // Bubble movement timer
     private var bubbleMovementTimer: Timer?
-    private let bubbleSpeedMultiplier: CGFloat = 1.0
+    private var bubbleSpeedMultiplier: CGFloat {
+        switch gameSettings.bubbleSpeed {
+        case .slow: return 0.5
+        case .medium: return 1.0
+        case .fast: return 1.5
+        }
+    }
 
     init(gameSettings: GameSettings, gameState: GameState) {
         self.gameSettings = gameSettings
@@ -35,6 +41,7 @@ class BubbleManager: ObservableObject {
         )
         updateScreenDimensions()
     }
+    
 
     deinit {
         NotificationCenter.default.removeObserver(self)
@@ -109,8 +116,8 @@ class BubbleManager: ObservableObject {
         return Bubble(
             id: UUID(),
             color: bubbleColor, // Corrected parameter name
-            position: position,
             size: bubbleSize,
+            position: position,
             velocity: CGPoint(x: dx, y: dy) // Fixed movement logic
         )
     }
