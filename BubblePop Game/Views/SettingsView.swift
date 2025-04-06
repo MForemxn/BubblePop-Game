@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @ObservedObject var gameSettings: GameSettings
-    @Environment(\.presentationMode) var presentationMode
+    @Environment(\.dismiss) private var dismiss
     
     @State private var gameTime: String
     @State private var maxBubbles: String
@@ -33,6 +33,9 @@ struct SettingsView: View {
                             .keyboardType(.numberPad)
                             .multilineTextAlignment(.trailing)
                             .frame(width: 80)
+                            .onChange(of: gameTime) { _ in
+                                validateAndSave()
+                            }
                     }
                     
                     HStack {
@@ -42,12 +45,21 @@ struct SettingsView: View {
                             .keyboardType(.numberPad)
                             .multilineTextAlignment(.trailing)
                             .frame(width: 80)
+                            .onChange(of: maxBubbles) { _ in
+                                validateAndSave()
+                            }
                     }
                 }
                 
                 Section(header: Text("Sound")) {
                     Toggle("Sound Effects", isOn: $gameSettings.soundEnabled)
+                        .onChange(of: gameSettings.soundEnabled) { _ in
+                            gameSettings.saveSettings()
+                        }
                     Toggle("Background Music", isOn: $gameSettings.musicEnabled)
+                        .onChange(of: gameSettings.musicEnabled) { _ in
+                            gameSettings.saveSettings()
+                        }
                 }
                 
                 Section(header: Text("Bubble Appearance")) {
@@ -61,6 +73,9 @@ struct SettingsView: View {
                         }
                         .pickerStyle(SegmentedPickerStyle())
                         .frame(width: 180)
+                        .onChange(of: gameSettings.bubbleSpeed) { _ in
+                            gameSettings.saveSettings()
+                        }
                     }
                 }
                 
@@ -72,16 +87,14 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        saveSettings()
-                    }
-                }
-                
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        presentationMode.wrappedValue.dismiss()
+                    Button(action: {
+                        dismiss()
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.blue)
                     }
                 }
             }
@@ -95,7 +108,7 @@ struct SettingsView: View {
         }
     }
     
-    func saveSettings() {
+    func validateAndSave() {
         guard let gameTimeInt = Int(gameTime), gameTimeInt >= 10 && gameTimeInt <= 120 else {
             alertMessage = "Game time must be between 10 and 120 seconds."
             showAlert = true
@@ -111,12 +124,16 @@ struct SettingsView: View {
         gameSettings.gameTime = gameTimeInt
         gameSettings.maxBubbles = maxBubblesInt
         gameSettings.saveSettings()
-        presentationMode.wrappedValue.dismiss()
     }
     
     func resetToDefaults() {
         gameSettings.resetToDefaults()
         gameTime = "\(gameSettings.gameTime)"
         maxBubbles = "\(gameSettings.maxBubbles)"
+        gameSettings.saveSettings()
     }
+}
+
+#Preview {
+    SettingsView(gameSettings: GameSettings())
 }

@@ -68,6 +68,29 @@ struct ContentView: View {
             .navigationTitle(navigationTitle)
             .navigationBarBackButtonHidden(true)
             .animation(.easeInOut, value: currentView)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        currentView = .settings
+                    }) {
+                        Image(systemName: "gear")
+                    }
+                }
+                
+                ToolbarItem(placement: .navigationBarLeading) {
+                    if currentView != .nameEntry {
+                        Button(action: {
+                            if currentView == .game { gameState.resetGame() }
+                            currentView = .nameEntry
+                        }) {
+                            HStack {
+                                Image(systemName: "arrow.left")
+                                Text("Back")
+                            }
+                        }
+                    }
+                }
+            }
             .sheet(isPresented: $gameState.gameOver) {
                 GameOverView(
                     score: gameState.currentScore,
@@ -97,23 +120,6 @@ struct ContentView: View {
         case .settings: return "Settings"
         }
     }
-    
-    private var leadingBarItems: some View {
-        Group {
-            if currentView != .nameEntry {
-                Button(action: {
-                    if currentView == .game { gameState.resetGame() }
-                    currentView = .nameEntry
-                }) {
-                    HStack {
-                        Image(systemName: "arrow.left")
-                        Text("Back")
-                    }
-                }
-            }
-        }
-    }
-    
 }
 
 #Preview {
