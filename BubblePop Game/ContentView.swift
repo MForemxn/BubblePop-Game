@@ -12,6 +12,7 @@ struct ContentView: View {
     @StateObject private var gameManager: GameManager
     @StateObject private var gameState: GameState
     @State private var currentView: AppView = .nameEntry
+    @State private var showSettings = false
     
     init() {
         let settingsInstance = GameSettings()
@@ -52,29 +53,23 @@ struct ContentView: View {
                         .environmentObject(settings)
                         .onDisappear { gameState.resetGame() }
                 case .highScores:
-                    NavigationLink(destination: HighScoresView(
+                    HighScoresView(
                         leaderboardManager: gameManager.leaderboardManager,
                         onBack: { currentView = .nameEntry }
-                    )) {
-                        EmptyView()
-                    }
+                    )
                 case .settings:
-                    NavigationLink(destination: SettingsView(gameSettings: settings, onBack: {
-                        // Using NavigationPath to go back - SwiftUI will handle this automatically
-                        // when the back button is pressed, if we're in a NavigationStack
-                    })) {
-                        EmptyView()
-                    }
+                    SettingsView(gameSettings: settings, onBack: { 
+                        currentView = .nameEntry 
+                    })
                 }
             }
             .navigationTitle(navigationTitle)
             .navigationBarBackButtonHidden(true)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationLink(destination: SettingsView(gameSettings: settings, onBack: {
-                        // Using NavigationPath to go back - SwiftUI will handle this automatically
-                        // when the back button is pressed, if we're in a NavigationStack
-                    })) {
+                    Button(action: {
+                        showSettings = true
+                    }) {
                         Image(systemName: "gear")
                     }
                 }
@@ -91,6 +86,13 @@ struct ContentView: View {
                             }
                         }
                     }
+                }
+            }
+            .sheet(isPresented: $showSettings) {
+                NavigationStack {
+                    SettingsView(gameSettings: settings, onBack: {
+                        showSettings = false
+                    })
                 }
             }
             .sheet(isPresented: $gameState.gameOver) {

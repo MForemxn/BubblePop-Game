@@ -12,24 +12,16 @@ struct HighScoresView: View {
     let onBack: () -> Void  // Closure to handle navigation
     
     var body: some View {
-        VStack {
-            Text("High Scores")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .padding()
-            
-            List(leaderboardManager.highScores) { player in
-                HStack {
-                    Text(player.name)
-                    Spacer()
-                    Text("\(player.score)")
-                        .font(.headline)
-                    Text(player.date, style: .date)
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
-                }
+        List(leaderboardManager.highScores) { player in
+            HStack {
+                Text(player.name)
+                Spacer()
+                Text("\(player.score)")
+                    .font(.headline)
+                Text(player.date, style: .date)
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
             }
-            .padding()
         }
         .navigationTitle("High Scores")
         .navigationBarTitleDisplayMode(.inline)
