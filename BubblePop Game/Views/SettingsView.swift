@@ -89,6 +89,7 @@ struct SettingsView: View {
             }
             
             Button(action: {
+                print("Back button pressed in SettingsView")
                 onBack()  // Trigger the closure instead of modifying gameManager
             }) {
                 Text("Back to Menu")

@@ -59,7 +59,15 @@ struct ContentView: View {
                         EmptyView()
                     }
                 case .settings:
-                    NavigationLink(destination: SettingsView(gameSettings: settings, onBack: {})) {
+                    NavigationLink(destination: SettingsView(gameSettings: settings, onBack: {
+                        DispatchQueue.main.async {
+                            let scenes = UIApplication.shared.connectedScenes
+                            let windowScene = scenes.first as? UIWindowScene
+                            let window = windowScene?.windows.first
+                            let rootViewController = window?.rootViewController
+                            rootViewController?.dismiss(animated: true)
+                        }
+                    })) {
                         EmptyView()
                     }
                 }
@@ -68,7 +76,15 @@ struct ContentView: View {
             .navigationBarBackButtonHidden(true)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationLink(destination: SettingsView(gameSettings: settings, onBack: {})) {
+                    NavigationLink(destination: SettingsView(gameSettings: settings, onBack: {
+                        DispatchQueue.main.async {
+                            let scenes = UIApplication.shared.connectedScenes
+                            let windowScene = scenes.first as? UIWindowScene
+                            let window = windowScene?.windows.first
+                            let rootViewController = window?.rootViewController
+                            rootViewController?.dismiss(animated: true)
+                        }
+                    })) {
                         Image(systemName: "gear")
                     }
                 }
