@@ -8,12 +8,11 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var settings = GameSettings() // Instantiate GameSettings directly
-    @StateObject private var gameManager: GameManager // Single GameManager instance
+    @StateObject private var settings = GameSettings()
+    @StateObject private var gameManager: GameManager
     @StateObject private var gameState: GameState
     @State private var currentView: AppView = .nameEntry
     
-    // Initialize all StateObjects in init()
     init() {
         let settingsInstance = GameSettings()
         _settings = StateObject(wrappedValue: settingsInstance)
@@ -48,31 +47,24 @@ struct ContentView: View {
                         playerName: $gameState.playerName,
                         onStartGame: { currentView = .game }
                     )
-                    .transition(.move(edge: .trailing))
                 case .game:
                     MainGameView(gameState: gameState, gameManager: gameManager)
                         .environmentObject(settings)
                         .onDisappear { gameState.resetGame() }
-                        .transition(.opacity)
                 case .highScores:
                     HighScoresView(
                         leaderboardManager: gameManager.leaderboardManager,
                         onBack: { currentView = .nameEntry }
                     )
-                    .transition(.opacity)
                 case .settings:
                     SettingsView(gameSettings: settings)
-                        .transition(.opacity)
                 }
             }
             .navigationTitle(navigationTitle)
             .navigationBarBackButtonHidden(true)
-            .animation(.easeInOut, value: currentView)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        currentView = .settings
-                    }) {
+                    NavigationLink(destination: SettingsView(gameSettings: settings)) {
                         Image(systemName: "gear")
                     }
                 }

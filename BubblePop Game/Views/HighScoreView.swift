@@ -47,3 +47,7 @@ struct HighScoresView: View {
         .navigationTitle("High Scores")  // Set title for parent navigation context
     }
 }
+
+#Preview {
+    HighScoresView(leaderboardManager: LeaderboardManager())
+}
