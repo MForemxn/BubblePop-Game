@@ -32,7 +32,7 @@ struct BubblePop_GameApp: App {
             case .game:
                 MainGameView(gameState: gameManager.gameState, gameManager: gameManager)
             case .settings:
-                SettingsView(gameSettings: gameSettings)
+                SettingsView(gameSettings: gameSettings, onBack: {})
             case .highScores:
                 HighScoresView(
                     leaderboardManager: gameManager.leaderboardManager,

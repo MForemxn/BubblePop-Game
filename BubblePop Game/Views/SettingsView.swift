@@ -9,21 +9,22 @@ import SwiftUI
 
 struct SettingsView: View {
     @ObservedObject var gameSettings: GameSettings
-    @Environment(\.dismiss) private var dismiss
+    let onBack: () -> Void  // Closure to handle navigation
     
     @State private var gameTime: String
     @State private var maxBubbles: String
     @State private var showAlert = false
     @State private var alertMessage = ""
     
-    init(gameSettings: GameSettings) {
+    init(gameSettings: GameSettings, onBack: @escaping () -> Void) {
         self.gameSettings = gameSettings
+        self.onBack = onBack
         self._gameTime = State(initialValue: "\(gameSettings.gameTime)")
         self._maxBubbles = State(initialValue: "\(gameSettings.maxBubbles)")
     }
     
     var body: some View {
-        NavigationView {
+        VStack {
             Form {
                 Section(header: Text("Game Settings")) {
                     HStack {
@@ -86,25 +87,27 @@ struct SettingsView: View {
                     .foregroundColor(.red)
                 }
             }
-            .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: {
-                        dismiss()
-                    }) {
-                        Image(systemName: "chevron.left")
-                            .foregroundColor(.blue)
-                    }
-                }
+            
+            Button(action: {
+                onBack()  // Trigger the closure instead of modifying gameManager
+            }) {
+                Text("Back to Menu")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(maxWidth: .infinity)  // Adaptive width
+                    .background(Color.blue)
+                    .cornerRadius(10)
             }
-            .alert(isPresented: $showAlert) {
-                Alert(
-                    title: Text("Invalid Settings"),
-                    message: Text(alertMessage),
-                    dismissButton: .default(Text("OK"))
-                )
-            }
+            .padding()
+        }
+        .navigationTitle("Settings")  // Set title for parent navigation context
+        .alert(isPresented: $showAlert) {
+            Alert(
+                title: Text("Invalid Settings"),
+                message: Text(alertMessage),
+                dismissButton: .default(Text("OK"))
+            )
         }
     }
     
@@ -135,5 +138,8 @@ struct SettingsView: View {
 }
 
 #Preview {
-    SettingsView(gameSettings: GameSettings())
+    SettingsView(gameSettings: GameSettings(), onBack: {})
 }
+
+
+// test comment

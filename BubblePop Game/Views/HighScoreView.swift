@@ -49,5 +49,5 @@ struct HighScoresView: View {
 }
 
 #Preview {
-    HighScoresView(leaderboardManager: LeaderboardManager())
+    HighScoresView(leaderboardManager: LeaderboardManager(), onBack: {})
 }

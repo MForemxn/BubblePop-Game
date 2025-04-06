@@ -52,19 +52,23 @@ struct ContentView: View {
                         .environmentObject(settings)
                         .onDisappear { gameState.resetGame() }
                 case .highScores:
-                    HighScoresView(
+                    NavigationLink(destination: HighScoresView(
                         leaderboardManager: gameManager.leaderboardManager,
                         onBack: { currentView = .nameEntry }
-                    )
+                    )) {
+                        EmptyView()
+                    }
                 case .settings:
-                    SettingsView(gameSettings: settings)
+                    NavigationLink(destination: SettingsView(gameSettings: settings, onBack: {})) {
+                        EmptyView()
+                    }
                 }
             }
             .navigationTitle(navigationTitle)
             .navigationBarBackButtonHidden(true)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationLink(destination: SettingsView(gameSettings: settings)) {
+                    NavigationLink(destination: SettingsView(gameSettings: settings, onBack: {})) {
                         Image(systemName: "gear")
                     }
                 }
