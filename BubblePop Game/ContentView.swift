@@ -60,13 +60,8 @@ struct ContentView: View {
                     }
                 case .settings:
                     NavigationLink(destination: SettingsView(gameSettings: settings, onBack: {
-                        DispatchQueue.main.async {
-                            let scenes = UIApplication.shared.connectedScenes
-                            let windowScene = scenes.first as? UIWindowScene
-                            let window = windowScene?.windows.first
-                            let rootViewController = window?.rootViewController
-                            rootViewController?.dismiss(animated: true)
-                        }
+                        // Using NavigationPath to go back - SwiftUI will handle this automatically
+                        // when the back button is pressed, if we're in a NavigationStack
                     })) {
                         EmptyView()
                     }
@@ -77,13 +72,8 @@ struct ContentView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     NavigationLink(destination: SettingsView(gameSettings: settings, onBack: {
-                        DispatchQueue.main.async {
-                            let scenes = UIApplication.shared.connectedScenes
-                            let windowScene = scenes.first as? UIWindowScene
-                            let window = windowScene?.windows.first
-                            let rootViewController = window?.rootViewController
-                            rootViewController?.dismiss(animated: true)
-                        }
+                        // Using NavigationPath to go back - SwiftUI will handle this automatically
+                        // when the back button is pressed, if we're in a NavigationStack
                     })) {
                         Image(systemName: "gear")
                     }

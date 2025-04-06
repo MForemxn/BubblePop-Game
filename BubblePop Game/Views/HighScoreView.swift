@@ -30,21 +30,23 @@ struct HighScoresView: View {
                 }
             }
             .padding()
-            
-            Button(action: {
-                onBack()  // Trigger the closure instead of modifying gameManager
-            }) {
-                Text("Back to Menu")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .padding()
-                    .frame(maxWidth: .infinity)  // Adaptive width
-                    .background(Color.blue)
-                    .cornerRadius(10)
-            }
-            .padding()
         }
-        .navigationTitle("High Scores")  // Set title for parent navigation context
+        .navigationTitle("High Scores")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    print("Back button pressed in HighScoresView")
+                    onBack()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .foregroundColor(.blue)
+                }
+            }
+        }
     }
 }
 

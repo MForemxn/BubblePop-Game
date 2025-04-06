@@ -24,85 +24,84 @@ struct SettingsView: View {
     }
     
     var body: some View {
-        VStack {
-            Form {
-                Section(header: Text("Game Settings")) {
-                    HStack {
-                        Text("Game Time (seconds)")
-                        Spacer()
-                        TextField("10-120", text: $gameTime)
-                            .keyboardType(.numberPad)
-                            .multilineTextAlignment(.trailing)
-                            .frame(width: 80)
-                            .onChange(of: gameTime) { _ in
-                                validateAndSave()
-                            }
-                    }
-                    
-                    HStack {
-                        Text("Maximum Bubbles")
-                        Spacer()
-                        TextField("5-30", text: $maxBubbles)
-                            .keyboardType(.numberPad)
-                            .multilineTextAlignment(.trailing)
-                            .frame(width: 80)
-                            .onChange(of: maxBubbles) { _ in
-                                validateAndSave()
-                            }
-                    }
-                }
-                
-                Section(header: Text("Sound")) {
-                    Toggle("Sound Effects", isOn: $gameSettings.soundEnabled)
-                        .onChange(of: gameSettings.soundEnabled) { _ in
-                            gameSettings.saveSettings()
-                        }
-                    Toggle("Background Music", isOn: $gameSettings.musicEnabled)
-                        .onChange(of: gameSettings.musicEnabled) { _ in
-                            gameSettings.saveSettings()
+        Form {
+            Section(header: Text("Game Settings")) {
+                HStack {
+                    Text("Game Time (seconds)")
+                    Spacer()
+                    TextField("10-120", text: $gameTime)
+                        .keyboardType(.numberPad)
+                        .multilineTextAlignment(.trailing)
+                        .frame(width: 80)
+                        .onChange(of: gameTime) { _ in
+                            validateAndSave()
                         }
                 }
                 
-                Section(header: Text("Bubble Appearance")) {
-                    HStack {
-                        Text("Bubble Speed")
-                        Spacer()
-                        Picker("Bubble Speed", selection: $gameSettings.bubbleSpeed) {
-                            Text("Slow").tag(GameSettings.BubbleSpeed.slow)
-                            Text("Medium").tag(GameSettings.BubbleSpeed.medium)
-                            Text("Fast").tag(GameSettings.BubbleSpeed.fast)
+                HStack {
+                    Text("Maximum Bubbles")
+                    Spacer()
+                    TextField("5-30", text: $maxBubbles)
+                        .keyboardType(.numberPad)
+                        .multilineTextAlignment(.trailing)
+                        .frame(width: 80)
+                        .onChange(of: maxBubbles) { _ in
+                            validateAndSave()
                         }
-                        .pickerStyle(SegmentedPickerStyle())
-                        .frame(width: 180)
-                        .onChange(of: gameSettings.bubbleSpeed) { _ in
-                            gameSettings.saveSettings()
-                        }
-                    }
-                }
-                
-                Section {
-                    Button("Reset to Default Settings") {
-                        resetToDefaults()
-                    }
-                    .foregroundColor(.red)
                 }
             }
             
-            Button(action: {
-                print("Back button pressed in SettingsView")
-                onBack()  // Trigger the closure instead of modifying gameManager
-            }) {
-                Text("Back to Menu")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .padding()
-                    .frame(maxWidth: .infinity)  // Adaptive width
-                    .background(Color.blue)
-                    .cornerRadius(10)
+            Section(header: Text("Sound")) {
+                Toggle("Sound Effects", isOn: $gameSettings.soundEnabled)
+                    .onChange(of: gameSettings.soundEnabled) { _ in
+                        gameSettings.saveSettings()
+                    }
+                Toggle("Background Music", isOn: $gameSettings.musicEnabled)
+                    .onChange(of: gameSettings.musicEnabled) { _ in
+                        gameSettings.saveSettings()
+                    }
             }
-            .padding()
+            
+            Section(header: Text("Bubble Appearance")) {
+                HStack {
+                    Text("Bubble Speed")
+                    Spacer()
+                    Picker("Bubble Speed", selection: $gameSettings.bubbleSpeed) {
+                        Text("Slow").tag(GameSettings.BubbleSpeed.slow)
+                        Text("Medium").tag(GameSettings.BubbleSpeed.medium)
+                        Text("Fast").tag(GameSettings.BubbleSpeed.fast)
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+                    .frame(width: 180)
+                    .onChange(of: gameSettings.bubbleSpeed) { _ in
+                        gameSettings.saveSettings()
+                    }
+                }
+            }
+            
+            Section {
+                Button("Reset to Default Settings") {
+                    resetToDefaults()
+                }
+                .foregroundColor(.red)
+            }
         }
-        .navigationTitle("Settings")  // Set title for parent navigation context
+        .navigationTitle("Settings")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    print("Back button pressed in SettingsView")
+                    onBack()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .foregroundColor(.blue)
+                }
+            }
+        }
         .alert(isPresented: $showAlert) {
             Alert(
                 title: Text("Invalid Settings"),
