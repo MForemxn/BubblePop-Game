@@ -77,8 +77,8 @@ struct SettingsView: View {
                     .onChange(of: gameSettings.bubbleSpeed) { newValue in
                         gameSettings.saveSettings()
                         
-                        // If we're in an active game, update the bubble speeds
-                        if gameManager.gameState.gameRunning {
+                        // Safely access gameManager if available
+                        if let gameManager = gameManager, gameManager.gameState.gameRunning {
                             gameManager.bubbleManager.updateBubbleSpeed()
                         }
                     }
@@ -140,7 +140,7 @@ struct SettingsView: View {
         maxBubbles = "\(gameSettings.maxBubbles)"
         
         // Also update bubble speeds if game is running
-        if gameManager.gameState.gameRunning {
+        if let gameManager = gameManager, gameManager.gameState.gameRunning {
             gameManager.bubbleManager.updateBubbleSpeed()
         }
         
