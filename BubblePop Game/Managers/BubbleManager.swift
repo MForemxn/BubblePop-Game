@@ -120,8 +120,9 @@ class BubbleManager: ObservableObject {
             let position = CGPoint(x: xPosition, y: yPosition)
             
             if !isPositionOverlapping(position, size: bubbleSize) {
-                // Create random velocity between -50 and 50
-                let speedMultiplier: CGFloat = 50
+                // Create velocity based on selected speed setting
+                let baseSpeed = getBaseSpeedMultiplier()
+                let speedMultiplier: CGFloat = baseSpeed
                 let dx = CGFloat.random(in: -1...1) * speedMultiplier
                 let dy = CGFloat.random(in: -1...1) * speedMultiplier
                 
@@ -136,6 +137,18 @@ class BubbleManager: ObservableObject {
         }
         
         return nil // Could not find non-overlapping position
+    }
+    
+    // Helper method to get the appropriate speed multiplier based on settings
+    private func getBaseSpeedMultiplier() -> CGFloat {
+        switch gameSettings.bubbleSpeed {
+        case .slow:
+            return 30
+        case .medium:
+            return 60
+        case .fast:
+            return 90
+        }
     }
 
     private func determineBubbleColor() -> BubbleColor {
@@ -184,7 +197,7 @@ class BubbleManager: ObservableObject {
     func updateBubbleSpeed() {
         // Calculate speed factor based on remaining time
         let timeRatio = Double(gameState.timeRemaining) / Double(gameSettings.gameTime)
-        let speedFactor = max(1.0, 1.0 + (1.0 - timeRatio) * 2.0) // Speed increases as time decreases
+        let timeSpeedFactor = max(1.0, 1.0 + (1.0 - timeRatio) * 1.5) // Speed increases as time decreases
         
         // Apply speed factor to all bubbles
         for i in 0..<bubbles.count {
@@ -196,9 +209,9 @@ class BubbleManager: ObservableObject {
                 let directionX = bubble.velocity.x / currentSpeed
                 let directionY = bubble.velocity.y / currentSpeed
                 
-                // Apply speed factor while maintaining direction
-                let baseSpeed: CGFloat = 50
-                let newSpeed = baseSpeed * CGFloat(speedFactor)
+                // Apply speed factors while maintaining direction
+                let baseSpeed = getBaseSpeedMultiplier()
+                let newSpeed = baseSpeed * CGFloat(timeSpeedFactor)
                 
                 bubble.velocity = CGPoint(
                     x: directionX * newSpeed,

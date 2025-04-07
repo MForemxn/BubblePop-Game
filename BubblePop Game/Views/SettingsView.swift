@@ -10,6 +10,7 @@ import SwiftUI
 struct SettingsView: View {
     @ObservedObject var gameSettings: GameSettings
     let onBack: () -> Void  // Closure to handle navigation
+    @EnvironmentObject var gameManager: GameManager
     
     @State private var gameTime: String
     @State private var maxBubbles: String
@@ -73,8 +74,13 @@ struct SettingsView: View {
                     }
                     .pickerStyle(SegmentedPickerStyle())
                     .frame(width: 180)
-                    .onChange(of: gameSettings.bubbleSpeed) { _ in
+                    .onChange(of: gameSettings.bubbleSpeed) { newValue in
                         gameSettings.saveSettings()
+                        
+                        // If we're in an active game, update the bubble speeds
+                        if gameManager.gameState.gameRunning {
+                            gameManager.bubbleManager.updateBubbleSpeed()
+                        }
                     }
                 }
             }
@@ -133,12 +139,21 @@ struct SettingsView: View {
         gameSettings.resetToDefaults()
         gameTime = "\(gameSettings.gameTime)"
         maxBubbles = "\(gameSettings.maxBubbles)"
+        
+        // Also update bubble speeds if game is running
+        if gameManager.gameState.gameRunning {
+            gameManager.bubbleManager.updateBubbleSpeed()
+        }
+        
         gameSettings.saveSettings()
     }
 }
 
 #Preview {
-    SettingsView(gameSettings: GameSettings(), onBack: {})
+    let settings = GameSettings()
+    let gameManager = GameManager(gameSettings: settings)
+    return SettingsView(gameSettings: settings, onBack: {})
+        .environmentObject(gameManager)
 }
 
 

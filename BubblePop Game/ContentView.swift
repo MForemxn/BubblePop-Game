@@ -61,6 +61,7 @@ struct ContentView: View {
                     SettingsView(gameSettings: settings, onBack: { 
                         currentView = .nameEntry 
                     })
+                    .environmentObject(gameManager)
                 }
             }
             .navigationTitle(navigationTitle)
@@ -93,6 +94,7 @@ struct ContentView: View {
                     SettingsView(gameSettings: settings, onBack: {
                         showSettings = false
                     })
+                    .environmentObject(gameManager)
                 }
             }
             .sheet(isPresented: $gameState.gameOver) {
