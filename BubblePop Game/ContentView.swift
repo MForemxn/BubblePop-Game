@@ -48,15 +48,18 @@ struct ContentView: View {
                         playerName: $gameState.playerName,
                         onStartGame: { currentView = .game }
                     )
+                    .environmentObject(gameManager)
                 case .game:
                     MainGameView(gameState: gameState, gameManager: gameManager)
                         .environmentObject(settings)
+                        .environmentObject(gameManager)
                         .onDisappear { gameState.resetGame() }
                 case .highScores:
                     HighScoresView(
                         leaderboardManager: gameManager.leaderboardManager,
                         onBack: { currentView = .nameEntry }
                     )
+                    .environmentObject(gameManager)
                 case .settings:
                     SettingsView(gameSettings: settings, onBack: { 
                         currentView = .nameEntry 

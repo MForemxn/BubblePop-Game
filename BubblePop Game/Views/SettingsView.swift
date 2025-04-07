@@ -9,8 +9,8 @@ import SwiftUI
 
 struct SettingsView: View {
     @ObservedObject var gameSettings: GameSettings
-    let onBack: () -> Void  // Closure to handle navigation
     @EnvironmentObject var gameManager: GameManager
+    let onBack: () -> Void  // Closure to handle navigation
     
     @State private var gameTime: String
     @State private var maxBubbles: String
