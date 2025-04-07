@@ -61,9 +61,27 @@ class BubbleManager: ObservableObject {
         }
     
     func refreshBubbles() {
-        // Clear old bubbles that are beyond the refresh threshold
-        // Add new bubbles as needed
-        updateBubbles()  // Assuming you already have this method
+        // Remove some random existing bubbles
+        let bubblesCount = bubbles.count
+        let removeCount = min(Int.random(in: 0...3), bubblesCount)
+        
+        if removeCount > 0 && bubblesCount > 0 {
+            let indicesToRemove = (0..<bubblesCount).shuffled().prefix(removeCount)
+            bubbles = bubbles.enumerated().filter { !indicesToRemove.contains($0.offset) }.map { $0.element }
+        }
+        
+        // Add new bubbles up to max allowed
+        let remainingSlots = gameSettings.maxBubbles - bubbles.count
+        if remainingSlots > 0 {
+            let newBubbleCount = Int.random(in: 1...remainingSlots)
+            for _ in 0..<newBubbleCount {
+                if let bubble = createBubble() {
+                    bubbles.append(bubble)
+                }
+            }
+        }
+        
+        gameState.bubbles = bubbles // Sync with GameState
     }
 
     func updateBubbles() {
@@ -73,45 +91,51 @@ class BubbleManager: ObservableObject {
 
     private func createBubble() -> Bubble? {
         guard screenWidth > 0, screenHeight > 0 else {
-                    print("Invalid screen dimensions: \(screenWidth)x\(screenHeight)")
-                    return nil
-                }
-        let bubbleColor = determineBubbleColor()
-        let bubbleSize: CGFloat = 60
-        let padding: CGFloat = 20
-
-        let topSafeArea = safeArea.top + padding + 80
-        let bottomSafeArea = safeArea.bottom + padding
-        let leftSafeArea = safeArea.left + padding
-        let rightSafeArea = safeArea.right + padding
-
-        let availableWidth = screenWidth - bubbleSize - leftSafeArea - rightSafeArea
-        let availableHeight = screenHeight - bubbleSize - topSafeArea - bottomSafeArea
-
-        if availableWidth <= 0 || availableHeight <= 0 {
+            print("Invalid screen dimensions: \(screenWidth)x\(screenHeight)")
             return nil
         }
-
-        let xPosition = CGFloat.random(in: leftSafeArea...(leftSafeArea + availableWidth))
-        let yPosition = CGFloat.random(in: topSafeArea...(topSafeArea + availableHeight))
-
-        let position = CGPoint(x: CGFloat.random(in: safeArea.left...screenWidth - safeArea.right),
-                                      y: CGFloat.random(in: safeArea.top...screenHeight - safeArea.bottom))
-        if isPositionOverlapping(position, size: bubbleSize) {
-            return nil
-        }
-
-        let dx = CGFloat.random(in: -2...2)
-        let dy = CGFloat.random(in: -2...2)
         
-
-        return Bubble(
-            id: UUID(),
-            color: bubbleColor,
-            size: bubbleSize,
-            position: position,
-            velocity: CGPoint(x: dx, y: dy)
-        )
+        let bubbleColor = BubbleColor.randomBubbleColor()
+        let bubbleSize: CGFloat = 60
+        
+        // Calculate available space within screen bounds
+        let topPadding = 100.0 // For navigation bar and status bar
+        let padding: CGFloat = 10
+        
+        // Calculate boundaries ensuring bubble stays fully on screen
+        let minX = bubbleSize/2 + padding
+        let maxX = screenWidth - bubbleSize/2 - padding
+        let minY = bubbleSize/2 + topPadding
+        let maxY = screenHeight - bubbleSize/2 - padding
+        
+        // Check if we have valid screen space
+        if maxX <= minX || maxY <= minY {
+            return nil
+        }
+        
+        // Try to find a non-overlapping position (max 20 attempts)
+        for _ in 0..<20 {
+            let xPosition = CGFloat.random(in: minX...maxX)
+            let yPosition = CGFloat.random(in: minY...maxY)
+            let position = CGPoint(x: xPosition, y: yPosition)
+            
+            if !isPositionOverlapping(position, size: bubbleSize) {
+                // Create random velocity between -50 and 50
+                let speedMultiplier: CGFloat = 50
+                let dx = CGFloat.random(in: -1...1) * speedMultiplier
+                let dy = CGFloat.random(in: -1...1) * speedMultiplier
+                
+                return Bubble(
+                    id: UUID(),
+                    color: bubbleColor,
+                    size: bubbleSize,
+                    position: position,
+                    velocity: CGPoint(x: dx, y: dy)
+                )
+            }
+        }
+        
+        return nil // Could not find non-overlapping position
     }
 
     private func determineBubbleColor() -> BubbleColor {
@@ -142,16 +166,92 @@ class BubbleManager: ObservableObject {
     }
 
     func startBubbleMovement() {
-        // Movement is handled by GameState, so this can be empty or removed
+        // Start a timer to move bubbles
+        Timer.scheduledTimer(withTimeInterval: 0.016, repeats: true) { [weak self] timer in
+            guard let self = self, self.gameState.gameRunning else {
+                timer.invalidate()
+                return
+            }
+            
+            self.moveBubbles()
+        }
     }
 
     func stopBubbleMovement() {
-        // Movement is handled by GameState, so this can be empty or removed
+        // Movement is handled by timer invalidation in startBubbleMovement
+    }
+
+    func updateBubbleSpeed() {
+        // Calculate speed factor based on remaining time
+        let timeRatio = Double(gameState.timeRemaining) / Double(gameSettings.gameTime)
+        let speedFactor = max(1.0, 1.0 + (1.0 - timeRatio) * 2.0) // Speed increases as time decreases
+        
+        // Apply speed factor to all bubbles
+        for i in 0..<bubbles.count {
+            var bubble = bubbles[i]
+            let currentSpeed = hypot(bubble.velocity.x, bubble.velocity.y)
+            
+            if currentSpeed > 0 {
+                // Normalize direction vector
+                let directionX = bubble.velocity.x / currentSpeed
+                let directionY = bubble.velocity.y / currentSpeed
+                
+                // Apply speed factor while maintaining direction
+                let baseSpeed: CGFloat = 50
+                let newSpeed = baseSpeed * CGFloat(speedFactor)
+                
+                bubble.velocity = CGPoint(
+                    x: directionX * newSpeed,
+                    y: directionY * newSpeed
+                )
+                
+                bubbles[i] = bubble
+            }
+        }
+        
+        gameState.bubbles = bubbles // Sync with GameState
     }
 
     func moveBubbles() {
-        gameState.updateBubblePositions(deltaTime: 0.05) // Delegate to GameState
-        bubbles = gameState.bubbles // Sync with GameState
+        let deltaTime: CGFloat = 0.016 // Approximately 60fps
+        
+        // Update bubble positions based on their velocities
+        var updatedBubbles: [Bubble] = []
+        
+        for bubble in bubbles {
+            var newBubble = bubble
+            
+            // Calculate new position
+            let newX = bubble.position.x + bubble.velocity.x * deltaTime
+            let newY = bubble.position.y + bubble.velocity.y * deltaTime
+            
+            // Check for boundary collisions and bounce
+            let radius = bubble.size / 2
+            var newVelocityX = bubble.velocity.x
+            var newVelocityY = bubble.velocity.y
+            
+            // Horizontal bounds check
+            if newX - radius < 0 || newX + radius > screenWidth {
+                newVelocityX = -newVelocityX
+            }
+            
+            // Vertical bounds check
+            if newY - radius < 0 || newY + radius > screenHeight {
+                newVelocityY = -newVelocityY
+            }
+            
+            // Apply updated position and velocity
+            newBubble.velocity = CGPoint(x: newVelocityX, y: newVelocityY)
+            newBubble.position = CGPoint(
+                x: min(max(radius, newX), screenWidth - radius),
+                y: min(max(radius, newY), screenHeight - radius)
+            )
+            
+            updatedBubbles.append(newBubble)
+        }
+        
+        bubbles = updatedBubbles
+        gameState.bubbles = bubbles // Sync with GameState
     }
 
     func clearBubbles() {

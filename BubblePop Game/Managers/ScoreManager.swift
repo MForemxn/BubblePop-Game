@@ -30,48 +30,66 @@ class ScoreManager: ObservableObject {
     
     func calculatePoints(for bubble: Bubble) -> Int {
         // Get base points based on bubble color
-        let basePoints = getBasePoints(for: bubble.color)
+        let basePoints = bubble.pointValue
         
         // Check for combo (same color bubbles popped consecutively)
-        if let lastColor = gameState.lastPoppedColor, lastColor == bubble.color {
+        if let lastColor = lastPoppedColor, lastColor == bubble.color {
+            // Increment combo count for same color
             comboCount += 1
             
-            // Apply combo multiplier
+            // Apply 1.5x multiplier for consecutive bubbles of same color
             let comboPoints = Int(Double(basePoints) * 1.5)
             
             // Animate combo
             if comboCount > 1 {
-                animationManager.showScorePopup(text: "x\(comboCount) COMBO!", position: bubble.position, color: .orange)
+                let comboText = "x\(comboCount) COMBO!"
+                animationManager.showScorePopup(
+                    text: comboText,
+                    position: CGPoint(x: bubble.position.x, y: bubble.position.y - 30),
+                    color: .orange
+                )
             }
+            
+            // Show score popup with bonus indication
+            animationManager.showScorePopup(
+                text: "+\(comboPoints)",
+                position: bubble.position,
+                color: .yellow
+            )
             
             return comboPoints
         } else {
-            // Reset combo count
+            // Reset combo count for new color
             comboCount = 1
+            
+            // Show regular score popup
+            animationManager.showScorePopup(
+                text: "+\(basePoints)",
+                position: bubble.position,
+                color: convertToUIColour(bubble.color)
+            )
+            
             return basePoints
         }
-    }
-
-    // Helper method to assign point values based on bubble color
-    private func getBasePoints(for color: BubbleColor) -> Int {
-        return color.pointValue // Use BubbleColor's pointValue
-    }
-
-    func addPoints(for bubble: Bubble) {
-        let points = calculatePoints(for: bubble)
-        currentScore += points
-        gameState.currentScore = currentScore // Changed score to currentScore
-        
-        // Update last popped color
-        gameState.lastPoppedColor = bubble.color
-        
-        // Show score popup animation
-        let uiColor = convertToUIColour(bubble.color)
-        animationManager.showScorePopup(text: "+\(points)", position: bubble.position, color: uiColor)
     }
 
     // Helper method to convert BubbleColor to SwiftUI Color
     private func convertToUIColour(_ bubbleColour: BubbleColor) -> Color {
         return bubbleColour.color // Use BubbleColor's color property
+    }
+
+    func addPoints(for bubble: Bubble) {
+        // Update last popped color before calculating points
+        lastPoppedColor = bubble.color
+        
+        // Calculate points (with combo if applicable)
+        let points = calculatePoints(for: bubble)
+        
+        // Update scores
+        currentScore += points
+        gameState.currentScore = currentScore
+        
+        // Update last popped color in game state for persistence
+        gameState.lastPoppedColor = bubble.color
     }
 }

@@ -79,7 +79,10 @@ class GameManager: ObservableObject {
         }
         
         // Refresh bubbles every second
-        bubbleManager.updateBubbles()
+        bubbleManager.refreshBubbles()
+        
+        // Update bubble speed based on remaining time
+        bubbleManager.updateBubbleSpeed()
         
         // Update animation states
         animationManager.updateAnimations()
@@ -104,7 +107,13 @@ class GameManager: ObservableObject {
         
         // Check if all bubbles are gone
         if gameState.bubbles.isEmpty {
-            endGame()
+            // Generate new bubbles
+            bubbleManager.refreshBubbles()
+            
+            // If we still couldn't create any bubbles after refresh, end the game
+            if gameState.bubbles.isEmpty && gameState.timeRemaining > 0 {
+                endGame()
+            }
         }
     }
     

@@ -57,16 +57,9 @@ struct MainGameView: View {
                     BubbleView(bubble: bubble)
                         .position(bubble.position)
                         .onTapGesture {
-                            gameManager.popBubble(bubble)
-                            gameState.soundManager.playPopSound()
-                            gameState.animationManager.animateBubblePop(
-                                at: bubble.position,
-                                color: bubble.color.color,
-                                size: bubble.size
-                            )
-                            // Check if all bubbles are gone
-                            if gameState.bubbles.isEmpty {
-                                gameEnd()
+                            // Pop the bubble
+                            if let index = gameState.bubbles.firstIndex(where: { $0.id == bubble.id }) {
+                                gameManager.popBubble(bubble)
                             }
                         }
                 }
@@ -154,6 +147,11 @@ struct MainGameView: View {
                 countdownTimer.invalidate()
                 showCountdown = false
                 gameManager.startGame()
+                
+                // Ensure we have bubbles after starting the game
+                if gameManager.gameState.bubbles.isEmpty {
+                    gameManager.bubbleManager.createBubbles()
+                }
             }
         }
     }
