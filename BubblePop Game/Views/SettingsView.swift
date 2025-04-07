@@ -97,7 +97,6 @@ struct SettingsView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: {
-                    print("Back button pressed in SettingsView")
                     onBack()
                 }) {
                     HStack {

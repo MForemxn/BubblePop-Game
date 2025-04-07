@@ -95,6 +95,7 @@ struct ContentView: View {
                         showSettings = false
                     })
                     .environmentObject(gameManager)
+                    .navigationBarBackButtonHidden(true)
                 }
             }
             .sheet(isPresented: $gameState.gameOver) {
