@@ -94,7 +94,7 @@ struct Player: Identifiable, Codable {
 }
 
 // Structure to store game settings with the player's score
-struct GameSettingsData: Codable {
+struct GameSettingsData: Codable, Equatable {
     let gameTime: Int
     let maxBubbles: Int
     let bubbleSpeed: String
@@ -113,5 +113,12 @@ struct GameSettingsData: Codable {
         self.gameTime = gameTime
         self.maxBubbles = maxBubbles
         self.bubbleSpeed = bubbleSpeed
+    }
+    
+    // Implement Equatable manually
+    static func == (lhs: GameSettingsData, rhs: GameSettingsData) -> Bool {
+        return lhs.gameTime == rhs.gameTime &&
+               lhs.maxBubbles == rhs.maxBubbles &&
+               lhs.bubbleSpeed == rhs.bubbleSpeed
     }
 }
