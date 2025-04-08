@@ -61,9 +61,16 @@ struct ContentView: View {
                     )
                     .environmentObject(gameManager)
                 case .settings:
-                    SettingsView(gameSettings: settings, onBack: { 
-                        currentView = .nameEntry 
-                    })
+                    SettingsView(
+                        gameSettings: settings, 
+                        onBack: { currentView = .nameEntry },
+                        onSettingsChanged: {
+                            // Update game components if game is running
+                            if gameManager.gameState.gameRunning {
+                                gameManager.bubbleManager.updateBubbleSpeed()
+                            }
+                        }
+                    )
                     .environmentObject(gameManager)
                 }
             }
@@ -94,12 +101,17 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showSettings) {
                 NavigationStack {
-                    SettingsView(gameSettings: settings, onBack: {
-                        showSettings = false
-                    })
-                    .environmentObject(gameManager)
+                    SettingsView(
+                        gameSettings: settings, 
+                        onBack: { showSettings = false },
+                        onSettingsChanged: {
+                            // Update game components if game is running
+                            if gameManager.gameState.gameRunning {
+                                gameManager.bubbleManager.updateBubbleSpeed()
+                            }
+                        }
+                    )
                 }
-                .environmentObject(gameManager)
             }
             .sheet(isPresented: $gameState.gameOver) {
                 GameOverView(

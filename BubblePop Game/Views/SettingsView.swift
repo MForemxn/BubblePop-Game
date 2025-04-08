@@ -9,17 +9,18 @@ import SwiftUI
 
 struct SettingsView: View {
     @ObservedObject var gameSettings: GameSettings
-    @EnvironmentObject var gameManager: GameManager
     let onBack: () -> Void  // Closure to handle navigation
+    let onSettingsChanged: () -> Void  // Closure to update game state when settings change
     
     @State private var gameTime: String
     @State private var maxBubbles: String
     @State private var showAlert = false
     @State private var alertMessage = ""
     
-    init(gameSettings: GameSettings, onBack: @escaping () -> Void) {
+    init(gameSettings: GameSettings, onBack: @escaping () -> Void, onSettingsChanged: @escaping () -> Void = {}) {
         self.gameSettings = gameSettings
         self.onBack = onBack
+        self.onSettingsChanged = onSettingsChanged
         self._gameTime = State(initialValue: "\(gameSettings.gameTime)")
         self._maxBubbles = State(initialValue: "\(gameSettings.maxBubbles)")
     }
@@ -56,10 +57,12 @@ struct SettingsView: View {
                 Toggle("Sound Effects", isOn: $gameSettings.soundEnabled)
                     .onChange(of: gameSettings.soundEnabled) { _ in
                         gameSettings.saveSettings()
+                        onSettingsChanged()
                     }
                 Toggle("Background Music", isOn: $gameSettings.musicEnabled)
                     .onChange(of: gameSettings.musicEnabled) { _ in
                         gameSettings.saveSettings()
+                        onSettingsChanged()
                     }
             }
             
@@ -76,11 +79,7 @@ struct SettingsView: View {
                     .frame(width: 180)
                     .onChange(of: gameSettings.bubbleSpeed) { newValue in
                         gameSettings.saveSettings()
-                        
-                        // Update bubble speeds if game is running
-                        if gameManager.gameState.gameRunning {
-                            gameManager.bubbleManager.updateBubbleSpeed()
-                        }
+                        onSettingsChanged()
                     }
                 }
             }
@@ -132,27 +131,21 @@ struct SettingsView: View {
         gameSettings.gameTime = gameTimeInt
         gameSettings.maxBubbles = maxBubblesInt
         gameSettings.saveSettings()
+        onSettingsChanged()
     }
     
     func resetToDefaults() {
         gameSettings.resetToDefaults()
         gameTime = "\(gameSettings.gameTime)"
         maxBubbles = "\(gameSettings.maxBubbles)"
-        
-        // Also update bubble speeds if game is running
-        if gameManager.gameState.gameRunning {
-            gameManager.bubbleManager.updateBubbleSpeed()
-        }
-        
         gameSettings.saveSettings()
+        onSettingsChanged()
     }
 }
 
 #Preview {
     let settings = GameSettings()
-    let gameManager = GameManager(gameSettings: settings)
     return SettingsView(gameSettings: settings, onBack: {})
-        .environmentObject(gameManager)
 }
 
 
