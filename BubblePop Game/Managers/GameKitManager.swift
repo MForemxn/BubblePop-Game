@@ -21,11 +21,10 @@ class GameKitManager: NSObject, ObservableObject {
     
     func authenticateLocalPlayer() {
         let localPlayer = GKLocalPlayer.local
-        localPlayer.authenticateHandler = { vc, error in
-            if let viewController = vc {
-                DispatchQueue.main.async {
-                    self.presentGameCenterViewController(viewController)
-                }
+        localPlayer.authenticateHandler = { viewController, error in
+            if let viewController = viewController {
+                // We need to present the authentication view controller
+                self.presentViewController(viewController)
             } else if localPlayer.isAuthenticated {
                 DispatchQueue.main.async {
                     self.isAuthenticated = true
@@ -55,23 +54,28 @@ class GameKitManager: NSObject, ObservableObject {
     }
     
     func showLeaderboard(leaderboardID: String) {
-        guard let rootVC = UIApplication.shared.windows.first?.rootViewController else {
-            print("Error: No root view controller available")
-            return
-        }
-        
         let gcViewController = GKGameCenterViewController(leaderboardID: leaderboardID, playerScope: .global, timeScope: .allTime)
         gcViewController.gameCenterDelegate = self
-        rootVC.present(gcViewController, animated: true)
+        presentViewController(gcViewController)
     }
     
-    private func presentGameCenterViewController(_ viewController: UIViewController) {
+    private func presentViewController(_ viewController: UIViewController) {
         DispatchQueue.main.async {
-            guard let rootVC = UIApplication.shared.windows.first?.rootViewController else {
-                print("Error: No root view controller available")
-                return
+            // Get the current active window scene
+            if let windowScene = UIApplication.shared.connectedScenes
+                .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
+               let rootViewController = windowScene.windows.first?.rootViewController {
+                
+                // Find the topmost presented view controller
+                var topController = rootViewController
+                while let presentedController = topController.presentedViewController {
+                    topController = presentedController
+                }
+                
+                topController.present(viewController, animated: true)
+            } else {
+                print("Error: No active window scene available")
             }
-            rootVC.present(viewController, animated: true)
         }
     }
 }
