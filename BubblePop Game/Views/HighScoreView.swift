@@ -22,10 +22,16 @@ struct HighScoresView: View {
             } else {
                 List {
                     ForEach(leaderboardManager.highScores) { player in
-                        VStack(alignment: .leading, spacing: 4) {
+                        NavigationLink(destination: DetailedScoreView(player: player, onBack: {})) {
                             HStack {
-                                Text(player.name)
-                                    .font(.headline)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(player.name)
+                                        .font(.headline)
+                                    
+                                    Text(player.date, style: .date)
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                }
                                 
                                 Spacer()
                                 
@@ -33,41 +39,8 @@ struct HighScoresView: View {
                                     .font(.title2)
                                     .fontWeight(.bold)
                             }
-                            
-                            // Show game settings if available
-                            if player.gameSettings != GameSettingsData.default {
-                                HStack {
-                                    Label("Settings", systemImage: "gear")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                    
-                                    Spacer()
-                                    
-                                    Text("Time: \(player.gameSettings.gameTime)s")
-                                        .font(.caption)
-                                    
-                                    Text("•")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                    
-                                    Text("Speed: \(player.gameSettings.bubbleSpeed.capitalized)")
-                                        .font(.caption)
-                                    
-                                    Text("•")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                    
-                                    Text("Max: \(player.gameSettings.maxBubbles)")
-                                        .font(.caption)
-                                }
-                                .padding(.top, 2)
-                            }
-                            
-                            Text(player.date, style: .date)
-                                .font(.caption)
-                                .foregroundColor(.gray)
+                            .padding(.vertical, 4)
                         }
-                        .padding(.vertical, 4)
                     }
                 }
             }
@@ -100,5 +73,7 @@ struct HighScoresView: View {
 }
 
 #Preview {
-    HighScoresView(leaderboardManager: LeaderboardManager(), onBack: {})
+    NavigationStack {
+        HighScoresView(leaderboardManager: LeaderboardManager(), onBack: {})
+    }
 }
