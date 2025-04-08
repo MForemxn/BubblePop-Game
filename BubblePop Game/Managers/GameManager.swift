@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import Combine
+import GameKit
 
 @MainActor
 // Create a class that doesn't require GameState during initialization
@@ -126,8 +127,14 @@ class GameManager: ObservableObject {
         // Stop background music
         soundManager.stopBackgroundMusic()
         
-        // Save score
-        leaderboardManager.addScore(player: gameState.player.name, score: gameState.currentScore)
+        // Save score with game settings
+        leaderboardManager.addScore(
+            player: gameState.player.name,
+            score: gameState.currentScore,
+            gameSettings: gameState.gameSettings
+        )
+        
+        // If GameKit is authenticated, we've already reported the score in leaderboardManager.addScore
         
         // Clear bubbles
         bubbleManager.clearBubbles()

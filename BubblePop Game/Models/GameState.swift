@@ -224,12 +224,11 @@ class GameState: ObservableObject {
         bubbleRefreshTimer?.invalidate()
         bubbleRefreshTimer = nil
 
-        // Save the player's score
+        // Save the player's score - this is now handled by GameManager
         let player = Player(name: playerName, score: currentScore, date: Date())
         Player.savePlayer(player)
 
-        // Report score to Game Center
-        GameKitManager.shared.reportScore(currentScore, leaderboardID: "bubblePop_leaderboard")
+        // Score is reported to Game Center in LeaderboardManager
 
         // Update highest score if needed
         if currentScore > highestScore {
