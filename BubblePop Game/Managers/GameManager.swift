@@ -158,11 +158,4 @@ class GameManager: ObservableObject {
         scoreManager.resetScore()
         bubbleManager.clearBubbles()
     }
-    
-    enum AppView {
-        case nameEntry
-        case game
-        case settings
-        case highScores
-    }
 }

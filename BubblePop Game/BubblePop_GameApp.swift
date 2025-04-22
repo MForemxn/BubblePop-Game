@@ -49,10 +49,3 @@ struct BubblePop_GameApp: App {
         }
     }
 }
-
-enum AppView: Hashable {
-    case nameEntry
-    case game
-    case settings
-    case highScores
-}
