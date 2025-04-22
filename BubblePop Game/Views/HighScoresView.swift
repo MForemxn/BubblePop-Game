@@ -71,9 +71,3 @@ extension HighScoresView {
     }
 }
 
-extension HighScoresView {
-    @ViewBuilder
-    private func navigationBarTitleDisplayMode() -> some View {
-        .inline
-    }
-} 
