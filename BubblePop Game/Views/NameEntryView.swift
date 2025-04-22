@@ -96,9 +96,7 @@ struct NameEntryView: View {
             }
             .disabled(playerName.isEmpty)
             
-            Button(action: {
-                gameManager.currentView = .settings
-            }) {
+            NavigationLink(value: AppView.settings) {
                 Text("Settings")
                     .font(.headline)
                     .foregroundColor(.white)
@@ -108,9 +106,7 @@ struct NameEntryView: View {
                     .cornerRadius(10)
             }
             
-            Button(action: {
-                gameManager.currentView = .highScores
-            }) {
+            NavigationLink(value: AppView.highScores) {
                 Text("High Scores")
                     .font(.headline)
                     .foregroundColor(.white)

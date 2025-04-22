@@ -20,31 +20,39 @@ struct BubblePop_GameApp: App {
     
     var body: some Scene {
         WindowGroup {
-            switch gameManager.currentView {
-            case .nameEntry:
+            NavigationStack(path: $gameManager.navigationPath) {
                 NameEntryView(
                     gameManager: gameManager,
                     playerName: $gameManager.gameState.playerName,
                     onStartGame: {
-                        gameManager.currentView = .game
+                        gameManager.startGame()
                     }
                 )
-            case .game:
-                MainGameView(gameState: gameManager.gameState, gameManager: gameManager)
-            case .settings:
-                NavigationStack {
-                    SettingsView(gameSettings: gameSettings, onBack: {
-                        gameManager.currentView = .nameEntry
-                    })
-                }
-            case .highScores:
-                NavigationStack {
-                    HighScoresView(
-                        leaderboardManager: gameManager.leaderboardManager,
-                        onBack: { gameManager.currentView = .nameEntry }
-                    )
+                .navigationDestination(for: AppView.self) { view in
+                    switch view {
+                    case .game:
+                        MainGameView(gameState: gameManager.gameState, gameManager: gameManager)
+                    case .settings:
+                        SettingsView(gameSettings: gameSettings, onBack: {
+                            gameManager.goBack()
+                        })
+                    case .highScores:
+                        HighScoresView(
+                            leaderboardManager: gameManager.leaderboardManager,
+                            onBack: { gameManager.goBack() }
+                        )
+                    case .nameEntry:
+                        EmptyView() // This case shouldn't be reached through navigation
+                    }
                 }
             }
         }
     }
+}
+
+enum AppView: Hashable {
+    case nameEntry
+    case game
+    case settings
+    case highScores
 }

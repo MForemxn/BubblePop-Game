@@ -13,7 +13,7 @@ import GameKit
 @MainActor
 // Create a class that doesn't require GameState during initialization
 class GameManager: ObservableObject {
-    @Published var currentView: AppView = .nameEntry
+    @Published var navigationPath: [AppView] = []
     @Published var gameState: GameState! // Make it implicitly unwrapped optional
     
     // Other managers
@@ -54,8 +54,9 @@ class GameManager: ObservableObject {
         gameState.highestScore = leaderboardManager.getHighestScore()
     }
     
-    
     func startGame() {
+        navigationPath.append(.game)
+        
         // Reset game state
         gameState.resetGame()
         
@@ -141,7 +142,15 @@ class GameManager: ObservableObject {
     }
     
     func showHighScores() {
-        currentView = .highScores
+        navigationPath.append(.highScores)
+    }
+    
+    func showSettings() {
+        navigationPath.append(.settings)
+    }
+    
+    func goBack() {
+        navigationPath.removeLast()
     }
     
     func resetGame() {
