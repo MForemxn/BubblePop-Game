@@ -53,8 +53,9 @@ struct MainGameView: View {
                     Spacer()
                 }
                 
-                // Bubbles - only show when countdown is finished
-                if !showCountdown {
+                // Game elements - only show when countdown is finished and game is running
+                if !showCountdown && gameState.gameRunning {
+                    // Bubbles
                     ForEach(gameState.bubbles) { bubble in
                         BubbleView(bubble: bubble)
                             .position(bubble.position)
@@ -64,10 +65,8 @@ struct MainGameView: View {
                                 }
                             }
                     }
-                }
-                
-                // Score popup animations
-                if !showCountdown {
+                    
+                    // Score popup animations
                     ForEach(gameState.animationManager.scorePopups) { popup in
                         Text(popup.text)
                             .font(.system(size: 24, weight: .bold))
@@ -76,10 +75,8 @@ struct MainGameView: View {
                             .opacity(popup.opacity)
                             .scaleEffect(popup.scale)
                     }
-                }
-                
-                // Bubble pop animations
-                if !showCountdown {
+                    
+                    // Bubble pop animations
                     ForEach(gameState.animationManager.bubblePopAnimations) { anim in
                         Circle()
                             .fill(anim.color)
@@ -171,9 +168,9 @@ struct MainGameView: View {
                     self.countdownTimer = nil
                     self.showCountdown = false
                     
-                    // Start the game on the main thread after countdown
+                    // Start the actual game after countdown
                     DispatchQueue.main.async {
-                        self.gameManager.startGame()
+                        self.gameManager.beginActualGame()
                     }
                 }
             }

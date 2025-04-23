@@ -58,23 +58,32 @@ class GameManager: ObservableObject {
         // Set the current view to game view
         navigationPath.append(.game)
         
-        // Reset game state
-        gameState.resetGame()
-        
         // Initialize game state but don't start running yet
-        gameState.timeRemaining = gameState.gameSettings.gameTime
-        gameState.isGameActive = true
+        gameState.initializeGame()
         
         // Create initial bubbles but don't start movement yet
         bubbleManager.createBubbles()
         
+        // Don't start the game's internal timer yet
+        // gameState.startGame() will be called after countdown
+        
+        // Don't play background music yet
+        // soundManager.playBackgroundMusic() will be called after countdown
+        
+        print("Game initialized: timeRemaining = \(gameState.timeRemaining), bubbles = \(gameState.bubbles.count)")
+    }
+    
+    func beginActualGame() {
         // Start the game's internal timer
         gameState.startGame()
+        
+        // Start bubble movement
+        bubbleManager.startBubbleMovement()
         
         // Play background music
         soundManager.playBackgroundMusic()
         
-        print("Game initialized: timeRemaining = \(gameState.timeRemaining), bubbles = \(gameState.bubbles.count)")
+        print("Game actually started: timeRemaining = \(gameState.timeRemaining), bubbles = \(gameState.bubbles.count)")
     }
     
     func updateGame() {

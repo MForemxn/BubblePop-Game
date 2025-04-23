@@ -109,6 +109,13 @@ class GameState: ObservableObject {
         refreshBubbles()
     }
     
+    func initializeGame() {
+        resetGame()
+        isGameActive = false
+        gameRunning = false
+        timeRemaining = gameSettings.gameTime
+    }
+
     func refreshBubbles() {
         Task { @MainActor in
             self.bubbleManager.refreshBubbles()
