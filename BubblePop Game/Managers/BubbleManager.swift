@@ -68,12 +68,13 @@ class BubbleManager: ObservableObject {
                 .compactMap { ($0 as? UIWindowScene)?.keyWindow?.safeAreaInsets }
                 .first ?? .zero
             
-            // Calculate playable area - use entire screen except for top stats bar
-            let headerHeight: CGFloat = 80 // Height of the stats bar
-            let topInset = max(self.safeArea.top, 0) + headerHeight
-            let leftInset = max(self.safeArea.left, 0)
-            let rightInset = max(self.safeArea.right, 0)
-            let bottomInset = max(self.safeArea.bottom, 0)
+            // Calculate playable area - use entire screen with minimal safe area adjustments
+            // Only account for the very top notch/status bar area if necessary
+            let topPadding: CGFloat = 0 // No additional padding beyond safe area
+            let topInset = self.safeArea.top + topPadding
+            let leftInset: CGFloat = 0 // Use full width, including safe area
+            let rightInset: CGFloat = 0 // Use full width, including safe area
+            let bottomInset: CGFloat = 0 // Use full height, including safe area
             
             self.playableArea = CGRect(
                 x: leftInset,

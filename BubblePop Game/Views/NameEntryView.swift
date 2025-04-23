@@ -48,6 +48,8 @@ struct NameEntryView: View {
     // Portrait layout - stacked vertically
     private var portraitLayout: some View {
         VStack(spacing: 20) {
+            Spacer(minLength: 20)
+            
             // Game title
             Text("BubblePop")
                 .font(.largeTitle)
@@ -62,18 +64,44 @@ struct NameEntryView: View {
             }
             
             // Start game button
-            startGameButton
+            Button(action: startGame) {
+                Text("Start Game")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 20)
+                    .frame(width: 200)
+                    .background(playerName.isEmpty ? Color.gray : Color.blue)
+                    .cornerRadius(10)
+            }
+            .disabled(playerName.isEmpty)
             
             // Navigation buttons
             NavigationLink(value: "settings") {
-                buttonLabel(text: "Settings", color: .green)
+                Text("Settings")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 20)
+                    .frame(width: 200)
+                    .background(Color.green)
+                    .cornerRadius(10)
             }
             
             NavigationLink(value: "highScores") {
-                buttonLabel(text: "High Scores", color: .orange)
+                Text("High Scores")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 20)
+                    .frame(width: 200)
+                    .background(Color.orange)
+                    .cornerRadius(10)
             }
+            
+            Spacer(minLength: 20)
         }
-        .padding()
+        .ignoresSafeArea()
         .onAppear {
             // When authenticated with GameKit, set nickname initially to GameKit name
             if gameKitManager.isAuthenticated && nickname.isEmpty {
@@ -85,7 +113,7 @@ struct NameEntryView: View {
     
     // Landscape layout - side-by-side columns
     private func landscapeLayout(geometry: GeometryProxy) -> some View {
-        HStack(spacing: 30) {
+        HStack(spacing: 0) {
             // Left column - title and name input
             VStack(spacing: 20) {
                 Spacer()
@@ -105,17 +133,17 @@ struct NameEntryView: View {
                         Text("Game Center: \(gameKitManager.playerName)")
                             .font(.headline)
                     }
-                    .padding()
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
                     .background(
-                        RoundedRectangle(cornerRadius: 10)
+                        RoundedRectangle(cornerRadius: 8)
                             .fill(Color.green.opacity(0.1))
                     )
                     
                     // Nickname input
                     TextField("Nickname", text: $nickname)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .padding(.horizontal)
-                        .frame(maxWidth: 300)
+                        .frame(width: min(300, geometry.size.width * 0.4))
                         .onChange(of: nickname) { oldValue, newValue in
                             playerName = newValue
                         }
@@ -126,14 +154,12 @@ struct NameEntryView: View {
                     
                     TextField("Player Name", text: $playerName)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .padding(.horizontal)
-                        .frame(maxWidth: 300)
+                        .frame(width: min(300, geometry.size.width * 0.4))
                 }
                 
                 Spacer()
             }
             .frame(width: geometry.size.width * 0.5)
-            .padding()
             
             // Right column - buttons
             VStack(spacing: 20) {
@@ -144,8 +170,9 @@ struct NameEntryView: View {
                     Text("Start Game")
                         .font(.headline)
                         .foregroundColor(.white)
-                        .padding()
-                        .frame(maxWidth: 200)
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 20)
+                        .frame(width: min(200, geometry.size.width * 0.3))
                         .background(playerName.isEmpty ? Color.gray : Color.blue)
                         .cornerRadius(10)
                 }
@@ -153,19 +180,33 @@ struct NameEntryView: View {
                 
                 // Settings button
                 NavigationLink(value: "settings") {
-                    buttonLabel(text: "Settings", color: .green)
+                    Text("Settings")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 20)
+                        .frame(width: min(200, geometry.size.width * 0.3))
+                        .background(Color.green)
+                        .cornerRadius(10)
                 }
                 
                 // High scores button
                 NavigationLink(value: "highScores") {
-                    buttonLabel(text: "High Scores", color: .orange)
+                    Text("High Scores")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 20)
+                        .frame(width: min(200, geometry.size.width * 0.3))
+                        .background(Color.orange)
+                        .cornerRadius(10)
                 }
                 
                 Spacer()
             }
             .frame(width: geometry.size.width * 0.5)
-            .padding()
         }
+        .ignoresSafeArea()
         .onAppear {
             // When authenticated with GameKit, set nickname initially to GameKit name
             if gameKitManager.isAuthenticated && nickname.isEmpty {
@@ -187,12 +228,12 @@ struct NameEntryView: View {
                 Text("Game Center: \(gameKitManager.playerName)")
                     .font(.headline)
             }
-            .padding()
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
             .background(
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: 8)
                     .fill(Color.green.opacity(0.1))
             )
-            .padding(.bottom, 10)
             
             // Nickname input
             Text("Enter Your Nickname")
@@ -200,8 +241,7 @@ struct NameEntryView: View {
             
             TextField("Nickname", text: $nickname)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding(.horizontal)
-                .frame(maxWidth: 300)
+                .frame(width: 280)
                 .onChange(of: nickname) { oldValue, newValue in
                     playerName = newValue
                 }
@@ -215,7 +255,7 @@ struct NameEntryView: View {
             Text("Game Center: Not Signed In")
                 .font(.headline)
                 .foregroundColor(.orange)
-                .padding(.bottom, 10)
+                .padding(.bottom, 5)
             
             // Name input
             Text("Enter Your Name")
@@ -223,31 +263,8 @@ struct NameEntryView: View {
             
             TextField("Player Name", text: $playerName)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding(.horizontal)
-                .frame(maxWidth: 300)
+                .frame(width: 280)
         }
-    }
-    
-    /// Start game button
-    private var startGameButton: some View {
-        Button(action: startGame) {
-            buttonLabel(
-                text: "Start Game",
-                color: playerName.isEmpty ? .gray : .blue
-            )
-        }
-        .disabled(playerName.isEmpty)
-    }
-    
-    /// Reusable button label style
-    private func buttonLabel(text: String, color: Color) -> some View {
-        Text(text)
-            .font(.headline)
-            .foregroundColor(.white)
-            .padding()
-            .frame(maxWidth: 200)
-            .background(color)
-            .cornerRadius(10)
     }
     
     // MARK: - Methods

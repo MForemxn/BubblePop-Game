@@ -176,16 +176,17 @@ class GameState: ObservableObject {
         screenSize = size
         isLandscape = size.width > size.height
         
-        // Calculate playable area - use entire screen except for top stats bar
+        // Calculate playable area - use entire screen with minimal safe area adjustments
         let safeArea = UIApplication.shared.connectedScenes
             .compactMap { ($0 as? UIWindowScene)?.keyWindow?.safeAreaInsets }
             .first ?? .zero
         
-        let headerHeight: CGFloat = 80 // Height of the stats bar
-        let topInset = max(safeArea.top, 0) + headerHeight
-        let leftInset = max(safeArea.left, 0)
-        let rightInset = max(safeArea.right, 0)
-        let bottomInset = max(safeArea.bottom, 0)
+        // Only respect the top safe area for the status bar
+        let topPadding: CGFloat = 0 // No additional padding beyond safe area
+        let topInset = safeArea.top + topPadding
+        let leftInset: CGFloat = 0 // Use full width
+        let rightInset: CGFloat = 0 // Use full width
+        let bottomInset: CGFloat = 0 // Use full height
         
         playableArea = CGRect(
             x: leftInset,

@@ -43,22 +43,20 @@ struct MainGameView: View {
                 Color(UIColor.systemBackground)
                     .ignoresSafeArea()
                 
-                // Game elements - only show when countdown is finished and game is running
+                // Game bubbles and animations use the full screen
                 if !showCountdown && gameState.gameRunning {
-                    VStack(spacing: 0) {
-                        // Stats bar always at the top in both orientations
+                    // Game area uses the entire screen
+                    gameBubbles
+                    scorePopups
+                    bubblePopAnimations
+                    
+                    // Stats bar floats at the top
+                    VStack {
                         gameInfoHeader
                             .padding(.horizontal)
                             .padding(.top, 5)
-                            .frame(height: 80)
                         
-                        // Game area uses the entire remaining screen
-                        ZStack {
-                            gameBubbles
-                            scorePopups
-                            bubblePopAnimations
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        Spacer()
                     }
                 }
                 
@@ -76,6 +74,7 @@ struct MainGameView: View {
                     gameOverView
                 }
             }
+            .ignoresSafeArea()
             .onAppear {
                 // Update screen size in game state when view appears
                 gameManager.gameState.updateScreenSize(geometry.size)
@@ -129,10 +128,10 @@ struct MainGameView: View {
                     .foregroundColor(gameState.timeRemaining <= 10 ? .red : .primary)
             }
         }
-        .padding()
+        .padding(10)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(Color(UIColor.secondarySystemBackground))
+                .fill(Color(UIColor.secondarySystemBackground).opacity(0.9))
         )
     }
     

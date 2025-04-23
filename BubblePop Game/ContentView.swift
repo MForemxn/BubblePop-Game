@@ -61,11 +61,12 @@ struct ContentView: View {
                         gradient: Gradient(colors: [Color.blue.opacity(0.3), Color.purple.opacity(0.3)]),
                         startPoint: .top, endPoint: .bottom
                     )
-                    .edgesIgnoringSafeArea(.all)
+                    .ignoresSafeArea()
                     
                     // Display the current view
                     currentViewContent(geometry: geometry)
                 }
+                .ignoresSafeArea()
                 .navigationTitle(navigationTitle)
                 .navigationBarBackButtonHidden(true)
                 .toolbar {
