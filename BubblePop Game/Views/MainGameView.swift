@@ -7,87 +7,51 @@
 
 import SwiftUI
 
+/// Main view that displays the game screen where bubbles appear and can be popped
 struct MainGameView: View {
+    // MARK: - Properties
+    
+    /// Game state containing all game data (score, bubbles, time, etc.)
     @ObservedObject var gameState: GameState
+    
+    /// Controls whether to show the countdown before game starts
     @State private var showCountdown = true
+    
+    /// Seconds remaining in the countdown (starts at 3)
     @State private var timeRemaining = 3
+    
+    /// Controls whether to show the game over popup
     @State private var gameOverPopup = false
+    
+    /// Timer used for the initial countdown
     @State private var countdownTimer: Timer?
     
+    /// Manager that handles game logic and updates
     @ObservedObject var gameManager: GameManager
+    
+    /// Timer that fires every second to update the game state
     let gameTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    
+    // MARK: - Body
     
     var body: some View {
         GeometryReader { geometry in
             ZStack {
+                // Background color
                 Color(UIColor.systemBackground)
                     .ignoresSafeArea()
                 
-                // Game information at the top
-                VStack {
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text("Player: \(gameState.playerName)")
-                                .font(.headline)
-                            Text("Highest Score: \(gameState.highestScore)")
-                                .font(.subheadline)
-                        }
-                        
-                        Spacer()
-                        
-                        VStack(alignment: .trailing) {
-                            Text("Score: \(gameState.currentScore)")
-                                .font(.headline)
-                            Text("Time: \(gameState.timeRemaining)")
-                                .font(.subheadline)
-                                .foregroundColor(gameState.timeRemaining <= 10 ? .red : .primary)
-                        }
-                    }
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(Color(UIColor.secondarySystemBackground))
-                    )
-                    .padding([.horizontal, .top])
-                    
-                    Spacer()
-                }
+                // Game information header (player name, score, time)
+                gameInfoHeader
                 
                 // Game elements - only show when countdown is finished and game is running
                 if !showCountdown && gameState.gameRunning {
-                    // Bubbles
-                    ForEach(gameState.bubbles) { bubble in
-                        BubbleView(bubble: bubble)
-                            .position(bubble.position)
-                            .onTapGesture {
-                                if let index = gameState.bubbles.firstIndex(where: { $0.id == bubble.id }) {
-                                    gameManager.popBubble(bubble)
-                                }
-                            }
-                    }
-                    
-                    // Score popup animations
-                    ForEach(gameState.animationManager.scorePopups) { popup in
-                        Text(popup.text)
-                            .font(.system(size: 24, weight: .bold))
-                            .foregroundColor(popup.color)
-                            .position(popup.position)
-                            .opacity(popup.opacity)
-                            .scaleEffect(popup.scale)
-                    }
-                    
-                    // Bubble pop animations
-                    ForEach(gameState.animationManager.bubblePopAnimations) { anim in
-                        Circle()
-                            .fill(anim.color)
-                            .frame(width: anim.size, height: anim.size)
-                            .position(anim.position)
-                            .opacity(anim.opacity)
-                            .scaleEffect(anim.scale)
-                    }
+                    gameBubbles
+                    scorePopups
+                    bubblePopAnimations
                 }
                 
-                // Countdown overlay - blocks all game interaction
+                // Countdown overlay - blocks all game interaction until countdown finishes
                 if showCountdown {
                     Color.black.opacity(0.7)
                         .ignoresSafeArea()
@@ -96,52 +60,33 @@ struct MainGameView: View {
                     CountdownView(timeRemaining: $timeRemaining)
                 }
                 
-                // Game over popup
+                // Game over popup that appears when time runs out
                 if gameOverPopup {
-                    VStack {
-                        Text("Game Over!")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .padding()
-                        
-                        Text("Your score: \(gameState.currentScore)")
-                            .font(.title2)
-                            .padding()
-                        
-                        Button(action: {
-                            gameOverPopup = false
-                            gameManager.showHighScores()
-                        }) {
-                            Text("View High Scores")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .padding()
-                                .background(Color.blue)
-                                .cornerRadius(10)
-                        }
-                        .padding()
-                    }
-                    .frame(width: 300, height: 250)
-                    .background(Color(UIColor.systemBackground))
-                    .cornerRadius(20)
-                    .shadow(radius: 10)
+                    gameOverView
                 }
             }
             .onAppear {
+                // Update screen size in game state when view appears
                 gameManager.gameState.updateScreenSize(geometry.size)
+                
+                // Start countdown if game is not already running
                 if !gameState.gameRunning {
                     startCountdown()
                 }
             }
             .onDisappear {
+                // Clean up timers and end game when view disappears
                 countdownTimer?.invalidate()
                 countdownTimer = nil
                 gameManager.endGame()
             }
             .onReceive(gameTimer) { _ in
+                // Update game state every second when game is running
                 if !showCountdown && gameState.gameRunning {
                     gameManager.updateGame()
                 }
+                
+                // End game if time runs out
                 if gameState.timeRemaining <= 0 && !gameOverPopup && !showCountdown {
                     gameEnd()
                 }
@@ -149,6 +94,112 @@ struct MainGameView: View {
         }
     }
     
+    // MARK: - View Components
+    
+    /// Header view showing player info, score and time
+    private var gameInfoHeader: some View {
+        VStack {
+            HStack {
+                // Player information
+                VStack(alignment: .leading) {
+                    Text("Player: \(gameState.playerName)")
+                        .font(.headline)
+                    Text("Highest Score: \(gameState.highestScore)")
+                        .font(.subheadline)
+                }
+                
+                Spacer()
+                
+                // Score and time information
+                VStack(alignment: .trailing) {
+                    Text("Score: \(gameState.currentScore)")
+                        .font(.headline)
+                    Text("Time: \(gameState.timeRemaining)")
+                        .font(.subheadline)
+                        .foregroundColor(gameState.timeRemaining <= 10 ? .red : .primary)
+                }
+            }
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color(UIColor.secondarySystemBackground))
+            )
+            .padding([.horizontal, .top])
+            
+            Spacer()
+        }
+    }
+    
+    /// Displays all active bubbles
+    private var gameBubbles: some View {
+        ForEach(gameState.bubbles) { bubble in
+            BubbleView(bubble: bubble)
+                .position(bubble.position)
+                .onTapGesture {
+                    // Pop the bubble when tapped
+                    gameManager.popBubble(bubble)
+                }
+        }
+    }
+    
+    /// Displays score popup animations
+    private var scorePopups: some View {
+        ForEach(gameState.animationManager.scorePopups) { popup in
+            Text(popup.text)
+                .font(.system(size: 24, weight: .bold))
+                .foregroundColor(popup.color)
+                .position(popup.position)
+                .opacity(popup.opacity)
+                .scaleEffect(popup.scale)
+        }
+    }
+    
+    /// Displays bubble pop animations
+    private var bubblePopAnimations: some View {
+        ForEach(gameState.animationManager.bubblePopAnimations) { anim in
+            Circle()
+                .fill(anim.color)
+                .frame(width: anim.size, height: anim.size)
+                .position(anim.position)
+                .opacity(anim.opacity)
+                .scaleEffect(anim.scale)
+        }
+    }
+    
+    /// Game over popup view
+    private var gameOverView: some View {
+        VStack {
+            Text("Game Over!")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .padding()
+            
+            Text("Your score: \(gameState.currentScore)")
+                .font(.title2)
+                .padding()
+            
+            Button(action: {
+                gameOverPopup = false
+                gameManager.showHighScores()
+            }) {
+                Text("View High Scores")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(Color.blue)
+                    .cornerRadius(10)
+            }
+            .padding()
+        }
+        .frame(width: 300, height: 250)
+        .background(Color(UIColor.systemBackground))
+        .cornerRadius(20)
+        .shadow(radius: 10)
+    }
+    
+    // MARK: - Methods
+    
+    /// Starts the countdown before the game begins
     func startCountdown() {
         showCountdown = true
         timeRemaining = 3
@@ -159,8 +210,6 @@ struct MainGameView: View {
         // Create a new timer on the main thread
         DispatchQueue.main.async {
             self.countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
-                print("Countdown timer: \(self.timeRemaining)")
-                
                 if self.timeRemaining > 1 {
                     self.timeRemaining -= 1
                 } else {
@@ -180,6 +229,7 @@ struct MainGameView: View {
         }
     }
     
+    /// Handles end of game logic
     func gameEnd() {
         gameManager.endGame()
         gameState.gameRunning = false
@@ -187,7 +237,9 @@ struct MainGameView: View {
     }
 }
 
+/// View for an individual bubble
 struct BubbleView: View {
+    /// The bubble data to display
     let bubble: Bubble
     
     var body: some View {

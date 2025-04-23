@@ -7,9 +7,11 @@
 
 import SwiftUI
 
+/// Different types of bubbles with their own colors and point values
 enum BubbleColor: String, CaseIterable {
     case red, pink, green, blue, black
     
+    /// The actual SwiftUI color to display
     var color: Color {
         switch self {
         case .red: return .red
@@ -20,26 +22,29 @@ enum BubbleColor: String, CaseIterable {
         }
     }
     
+    /// Points earned when popping this bubble
     var pointValue: Int {
         switch self {
-        case .red: return 1
+        case .red: return 1    // Most common, lowest points
         case .pink: return 2
         case .green: return 5
         case .blue: return 8
-        case .black: return 10
+        case .black: return 10 // Rarest, highest points
         }
     }
     
+    /// Probability of this bubble appearing (must add up to 1.0)
     var probability: Double {
         switch self {
-        case .red: return 0.4
-        case .pink: return 0.3
-        case .green: return 0.15
-        case .blue: return 0.1
-        case .black: return 0.05
+        case .red: return 0.4  // 40% chance
+        case .pink: return 0.3 // 30% chance
+        case .green: return 0.15 // 15% chance
+        case .blue: return 0.1  // 10% chance
+        case .black: return 0.05 // 5% chance
         }
     }
     
+    /// Get a random bubble color based on probability distribution
     static func randomBubbleColor() -> BubbleColor {
         let random = Double.random(in: 0...1)
         var cumulativeProbability = 0.0
@@ -55,20 +60,40 @@ enum BubbleColor: String, CaseIterable {
     }
 }
 
+/// Represents a bubble in the game
 struct Bubble: Identifiable {
-    let id: UUID // Changed to let, but initialized in the init
+    /// Unique identifier for the bubble
+    let id: UUID
+    
+    /// Color of the bubble
     let color: BubbleColor
+    
+    /// Size of the bubble in points
     let size: CGFloat
+    
+    /// Current position on screen
     var position: CGPoint
-    var velocity: CGPoint // Added velocity as a property
+    
+    /// Current movement velocity (speed and direction)
+    var velocity: CGPoint
+    
+    /// Whether the bubble is active in the game
     var isActive: Bool
     
+    /// Points earned when this bubble is popped
     var pointValue: Int {
         return color.pointValue
     }
     
-    // Updated initializer to include id, velocity, and isActive
-    init(id: UUID = UUID(), color: BubbleColor, size: CGFloat, position: CGPoint, velocity: CGPoint = CGPoint(x: Double.random(in: -50...50), y: Double.random(in: -50...50)), isActive: Bool = true) {
+    /// Create a new bubble
+    init(
+        id: UUID = UUID(),
+        color: BubbleColor,
+        size: CGFloat,
+        position: CGPoint,
+        velocity: CGPoint = CGPoint(x: Double.random(in: -50...50), y: Double.random(in: -50...50)),
+        isActive: Bool = true
+    ) {
         self.id = id
         self.color = color
         self.size = size
@@ -77,6 +102,7 @@ struct Bubble: Identifiable {
         self.isActive = isActive
     }
     
+    /// Try to generate a random bubble that doesn't overlap with existing bubbles
     static func generateRandomBubble(in size: CGSize, existingBubbles: [Bubble], bubbleSize: CGFloat) -> Bubble? {
         let maxAttempts = 100
         var attempts = 0
@@ -98,13 +124,11 @@ struct Bubble: Identifiable {
             }
             
             if !hasOverlap {
+                // Create the bubble with random color and velocity
                 return Bubble(
-                    id: UUID(), // Explicitly pass id
                     color: BubbleColor.randomBubbleColor(),
                     size: bubbleSize,
-                    position: position,
-                    velocity: CGPoint(x: Double.random(in: -50...50), y: Double.random(in: -50...50)), // Pass velocity
-                    isActive: true
+                    position: position
                 )
             }
         }

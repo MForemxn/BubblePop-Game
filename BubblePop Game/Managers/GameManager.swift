@@ -10,25 +10,42 @@ import SwiftUI
 import Combine
 import GameKit
 
+/// Main manager class that coordinates the game flow and state
 @MainActor
-// Create a class that doesn't require GameState during initialization
 class GameManager: ObservableObject {
-    @Published var navigationPath: [AppView] = []
-    @Published var gameState: GameState! // Make it implicitly unwrapped optional
+    // MARK: - Properties
     
-    // Other managers
+    /// Navigation path for app navigation
+    @Published var navigationPath: [AppView] = []
+    
+    /// Main game state object that holds all game data
+    @Published var gameState: GameState!
+    
+    // Managers for different game aspects
+    
+    /// Manager for game sound effects and music
     let soundManager: SoundManager
+    
+    /// Manager for animations (bubble pops, score popups)
     let animationManager: AnimationManager
+    
+    /// Manager for high scores and leaderboard
     let leaderboardManager: LeaderboardManager
+    
+    /// Manager for scoring logic
     var scoreManager: ScoreManager!
+    
+    /// Manager for bubble creation and movement
     var bubbleManager: BubbleManager!
     
+    // MARK: - Initialization
+    
+    /// Initialize the game manager with game settings
     init(gameSettings: GameSettings) {
         // Create managers that don't depend on gameState first
         let animationManager = AnimationManager()
         self.animationManager = animationManager
         
-        let soundManager = SoundManager(gameSettings: gameSettings)
         self.soundManager = SoundManager(gameSettings: gameSettings)
         self.leaderboardManager = LeaderboardManager()
         
@@ -54,6 +71,9 @@ class GameManager: ObservableObject {
         gameState.highestScore = leaderboardManager.getHighestScore()
     }
     
+    // MARK: - Game Flow Methods
+    
+    /// Start the game by initializing state and navigating to game screen
     func startGame() {
         // Set the current view to game view
         navigationPath.append(.game)
@@ -73,6 +93,7 @@ class GameManager: ObservableObject {
         print("Game initialized: timeRemaining = \(gameState.timeRemaining), bubbles = \(gameState.bubbles.count)")
     }
     
+    /// Begin the actual gameplay after countdown finishes
     func beginActualGame() {
         // Start the game's internal timer
         gameState.startGame()
@@ -86,6 +107,7 @@ class GameManager: ObservableObject {
         print("Game actually started: timeRemaining = \(gameState.timeRemaining), bubbles = \(gameState.bubbles.count)")
     }
     
+    /// Update game state every second
     func updateGame() {
         // Update game timer
         if gameState.timeRemaining > 0 {
@@ -102,6 +124,7 @@ class GameManager: ObservableObject {
         animationManager.updateAnimations()
     }
     
+    /// Handle popping a bubble when player taps it
     func popBubble(_ bubble: Bubble) {
         // Add points
         scoreManager.addPoints(for: bubble)
@@ -131,6 +154,7 @@ class GameManager: ObservableObject {
         }
     }
     
+    /// End the game and clean up resources
     func endGame() {
         gameState.gameRunning = false
         gameState.isGameActive = false
@@ -154,18 +178,24 @@ class GameManager: ObservableObject {
         bubbleManager.clearBubbles()
     }
     
+    // MARK: - Navigation Methods
+    
+    /// Navigate to high scores screen
     func showHighScores() {
         navigationPath.append(.highScores)
     }
     
+    /// Navigate to settings screen
     func showSettings() {
         navigationPath.append(.settings)
     }
     
+    /// Go back to previous screen
     func goBack() {
         navigationPath.removeLast()
     }
     
+    /// Reset the game state to start a new game
     func resetGame() {
         gameState.resetGame()
         scoreManager.resetScore()

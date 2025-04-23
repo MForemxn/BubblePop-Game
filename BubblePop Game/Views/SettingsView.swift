@@ -7,16 +7,34 @@
 
 import SwiftUI
 
+/// View for adjusting game settings and preferences
 struct SettingsView: View {
-    @ObservedObject var gameSettings: GameSettings
-    let onBack: () -> Void  // Closure to handle navigation
-    let onSettingsChanged: () -> Void  // Closure to update game state when settings change
+    // MARK: - Properties
     
+    /// Settings object to modify
+    @ObservedObject var gameSettings: GameSettings
+    
+    /// Callback for when the back button is pressed
+    let onBack: () -> Void
+    
+    /// Callback for when settings are changed
+    let onSettingsChanged: () -> Void
+    
+    /// Current game time in string form (for text field)
     @State private var gameTime: String
+    
+    /// Current max bubbles in string form (for text field)
     @State private var maxBubbles: String
+    
+    /// Controls whether to show validation alert
     @State private var showAlert = false
+    
+    /// Message to display in the validation alert
     @State private var alertMessage = ""
     
+    // MARK: - Initialization
+    
+    /// Initialize the settings view with game settings and callbacks
     init(gameSettings: GameSettings, onBack: @escaping () -> Void, onSettingsChanged: @escaping () -> Void = {}) {
         self.gameSettings = gameSettings
         self.onBack = onBack
@@ -25,9 +43,13 @@ struct SettingsView: View {
         self._maxBubbles = State(initialValue: "\(gameSettings.maxBubbles)")
     }
     
+    // MARK: - Body
+    
     var body: some View {
         Form {
+            // Game duration and bubble count settings
             Section(header: Text("Game Settings")) {
+                // Game duration setting
                 HStack {
                     Text("Game Time (seconds)")
                     Spacer()
@@ -40,6 +62,7 @@ struct SettingsView: View {
                         }
                 }
                 
+                // Maximum bubble count setting
                 HStack {
                     Text("Maximum Bubbles")
                     Spacer()
@@ -53,12 +76,16 @@ struct SettingsView: View {
                 }
             }
             
+            // Sound settings
             Section(header: Text("Sound")) {
+                // Sound effects toggle
                 Toggle("Sound Effects", isOn: $gameSettings.soundEnabled)
                     .onChange(of: gameSettings.soundEnabled) { _ in
                         gameSettings.saveSettings()
                         onSettingsChanged()
                     }
+                
+                // Music toggle
                 Toggle("Background Music", isOn: $gameSettings.musicEnabled)
                     .onChange(of: gameSettings.musicEnabled) { _ in
                         gameSettings.saveSettings()
@@ -66,6 +93,7 @@ struct SettingsView: View {
                     }
             }
             
+            // Bubble speed setting
             Section(header: Text("Bubble Appearance")) {
                 HStack {
                     Text("Bubble Speed")
@@ -77,13 +105,14 @@ struct SettingsView: View {
                     }
                     .pickerStyle(SegmentedPickerStyle())
                     .frame(width: 180)
-                    .onChange(of: gameSettings.bubbleSpeed) { newValue in
+                    .onChange(of: gameSettings.bubbleSpeed) { _ in
                         gameSettings.saveSettings()
                         onSettingsChanged()
                     }
                 }
             }
             
+            // Reset settings section
             Section {
                 Button("Reset to Default Settings") {
                     resetToDefaults()
@@ -102,25 +131,32 @@ struct SettingsView: View {
         }
     }
     
+    // MARK: - Methods
+    
+    /// Validate input values and save if valid
     func validateAndSave() {
+        // Validate game time
         guard let gameTimeInt = Int(gameTime), gameTimeInt >= 10 && gameTimeInt <= 120 else {
             alertMessage = "Game time must be between 10 and 120 seconds."
             showAlert = true
             return
         }
         
+        // Validate maximum bubbles
         guard let maxBubblesInt = Int(maxBubbles), maxBubblesInt >= 5 && maxBubblesInt <= 30 else {
             alertMessage = "Maximum bubbles must be between 5 and 30."
             showAlert = true
             return
         }
         
+        // Save valid settings
         gameSettings.gameTime = gameTimeInt
         gameSettings.maxBubbles = maxBubblesInt
         gameSettings.saveSettings()
         onSettingsChanged()
     }
     
+    /// Reset all settings to default values
     func resetToDefaults() {
         gameSettings.resetToDefaults()
         gameTime = "\(gameSettings.gameTime)"
@@ -134,6 +170,3 @@ struct SettingsView: View {
     let settings = GameSettings()
     return SettingsView(gameSettings: settings, onBack: {})
 }
-
-
-// test comment

@@ -9,40 +9,79 @@ import Foundation
 import SwiftUI
 import Combine
 
+/// Stores and manages the current state of the game
 class GameState: ObservableObject {
+    // MARK: - Properties
     
+    /// Whether the game is currently running
     @Published var gameRunning: Bool = false
+    
+    /// Time remaining in seconds
     @Published var timeRemaining: Int = 0
+    
+    /// List of active bubbles in the game
     @Published var bubbles: [Bubble] = []
+    
+    /// Name of the current player
     @Published var playerName: String = ""
+    
+    /// Current score for this game
     @Published var currentScore: Int = 0
+    
+    /// Whether the game is active (used for timers)
     @Published var isGameActive: Bool = false
+    
+    /// Whether the game is over
     @Published var gameOver: Bool = false
+    
+    /// Color of the last bubble that was popped (for combo tracking)
     @Published var lastPoppedColor: BubbleColor? = nil
+    
+    /// Counter for consecutive pops of the same color
     @Published var consecutiveSameColorPops: Int = 0
+    
+    /// Highest score achieved across all games
     @Published var highestScore: Int = 0
 
+    /// Timer for game countdown
     private var timer: Timer?
+    
+    /// Timer for refreshing bubbles
     private var bubbleRefreshTimer: Timer?
-    let gameSettings: GameSettings // Made public
+    
+    /// Game settings (difficulty, duration, etc.)
+    let gameSettings: GameSettings
+    
+    /// Current screen size for bubble positioning
     private var screenSize: CGSize = .zero
+    
+    /// Combine cancellables for managing subscriptions
     private var cancellables = Set<AnyCancellable>()
 
+    // References to game managers
     var bubbleManager: BubbleManager!
     var scoreManager: ScoreManager!
     var leaderboardManager: LeaderboardManager!
     var soundManager: SoundManager!
     var animationManager: AnimationManager!
+    
+    /// Current player record
     var player = Player(name: "", score: 0, date: Date())
 
+    // MARK: - Initialization
+    
+    /// Initialize game state with dependencies
     init(gameSettings: GameSettings, animationManager: AnimationManager, soundManager: SoundManager) {
         self.gameSettings = gameSettings
         self.animationManager = animationManager
         self.soundManager = soundManager
-        self.timeRemaining = gameSettings.gameTime // Initialize with gameSettings
+        self.timeRemaining = gameSettings.gameTime
         loadHighestScore()
     }
 
+    // MARK: - Game Management
+    
+    /// Reset the game state to default values
     func resetGame() {
         currentScore = 0
         timeRemaining = gameSettings.gameTime
@@ -52,37 +91,39 @@ class GameState: ObservableObject {
         lastPoppedColor = nil
         consecutiveSameColorPops = 0
 
+        // Stop timers
         timer?.invalidate()
         timer = nil
 
         bubbleRefreshTimer?.invalidate()
         bubbleRefreshTimer = nil
     }
-
     
+    /// Score multiplier for consecutive same-color pops
     var comboMultiplier: Double {
         return consecutiveSameColorPops > 0 ? 1.5 : 1.0
     }
 
+    /// Load the highest score from saved data
     func loadHighestScore() {
         let players = Player.loadPlayers()
         highestScore = players.map { $0.score }.max() ?? 0
     }
 
+    /// Start the game timers and mechanics
     func startGame() {
         resetGame()
         isGameActive = true
         gameRunning = true
         timeRemaining = gameSettings.gameTime
 
-        // Set up the game timer
+        // Set up the game countdown timer
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             guard let self = self, self.isGameActive else { return }
             
             if self.timeRemaining > 0 {
                 self.timeRemaining -= 1
-                print("GameState timer tick: \(self.timeRemaining) seconds left")
                 self.updateBubbleVelocities()
             } else {
                 self.endGame()
@@ -109,6 +150,7 @@ class GameState: ObservableObject {
         refreshBubbles()
     }
     
+    /// Initialize game state before countdown
     func initializeGame() {
         resetGame()
         isGameActive = false
@@ -116,41 +158,19 @@ class GameState: ObservableObject {
         timeRemaining = gameSettings.gameTime
     }
 
+    /// Refresh bubbles via bubble manager
     func refreshBubbles() {
         Task { @MainActor in
             self.bubbleManager.refreshBubbles()
         }
     }
 
+    /// Update the screen size when device rotates or view appears
     func updateScreenSize(_ size: CGSize) {
-            screenSize = size
-        }
-
-    func refreshments() {
-        guard isGameActive else { return }
-
-        // Remove some random bubbles
-        let numberOfBubblesToRemove = Int.random(in: 0...min(3, bubbles.count))
-        if numberOfBubblesToRemove > 0 {
-            let indicesToRemove = (0..<bubbles.count).shuffled().prefix(numberOfBubblesToRemove)
-            bubbles = bubbles.enumerated().filter { !indicesToRemove.contains($0.offset) }.map { $0.element }
-        }
-
-        // Add new bubbles
-        let currentBubbleCount = bubbles.count
-        let numberOfBubblesToAdd = Int.random(in: 0...(gameSettings.maxBubbles - currentBubbleCount))
-
-        for _ in 0..<numberOfBubblesToAdd {
-            if let newBubble = Bubble.generateRandomBubble(
-                in: screenSize,
-                existingBubbles: bubbles,
-                bubbleSize: 60
-            ) {
-                bubbles.append(newBubble)
-            }
-        }
+        screenSize = size
     }
 
+    /// Update bubble positions based on velocity
     func updateBubblePositions(deltaTime: TimeInterval) {
         bubbles = bubbles.map { bubble in
             var newBubble = bubble
@@ -178,6 +198,7 @@ class GameState: ObservableObject {
         }
     }
 
+    /// Update bubble velocities based on remaining time
     func updateBubbleVelocities() {
         let timeRatio = Double(timeRemaining) / Double(gameSettings.gameTime)
         let speedFactor = 1.0 + (1.0 - timeRatio) * 2.0 // Speed increases as time decreases
@@ -187,6 +208,7 @@ class GameState: ObservableObject {
             let originalSpeed = hypot(bubble.velocity.x, bubble.velocity.y)
 
             if originalSpeed > 0 {
+                // Maintain direction but increase speed
                 let direction = CGVector(
                     dx: bubble.velocity.x / originalSpeed,
                     dy: bubble.velocity.y / originalSpeed
@@ -203,6 +225,7 @@ class GameState: ObservableObject {
         }
     }
 
+    /// Pop a bubble at the specified index
     func popBubble(at index: Int) {
         guard index < bubbles.count else { return }
 
@@ -220,8 +243,8 @@ class GameState: ObservableObject {
 
         // Calculate points with combo
         let points = consecutiveSameColorPops > 0 ?
-        Int(Double(bubble.pointValue) * comboMultiplier) :
-        bubble.pointValue
+            Int(Double(bubble.pointValue) * comboMultiplier) :
+            bubble.pointValue
 
         // Update score
         currentScore += points
@@ -230,27 +253,26 @@ class GameState: ObservableObject {
         bubbles.remove(at: index)
     }
 
+    /// End the game and handle cleanup
     func endGame() {
         isGameActive = false
         gameRunning = false
         gameOver = true
 
+        // Stop timers
         timer?.invalidate()
         timer = nil
 
         bubbleRefreshTimer?.invalidate()
         bubbleRefreshTimer = nil
 
-        // Save the player's score - this is now handled by GameManager
+        // Save the player's score
         let player = Player(name: playerName, score: currentScore, date: Date())
         Player.savePlayer(player)
-
-        // Score is reported to Game Center in LeaderboardManager
 
         // Update highest score if needed
         if currentScore > highestScore {
             highestScore = currentScore
         }
     }
-    
 }
