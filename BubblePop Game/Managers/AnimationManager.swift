@@ -33,7 +33,7 @@ class AnimationManager: ObservableObject {
 
     func showScorePopup(text: String, position: CGPoint, color: Color) {
         // Create a new score popup
-        var popup = ScorePopup(
+        let popup = ScorePopup(
             text: text,
             color: color,
             position: position,
@@ -60,7 +60,7 @@ class AnimationManager: ObservableObject {
 
     func animateBubblePop(at position: CGPoint, color: Color, size: CGFloat) {
         // Create a new bubble pop animation
-        var anim = BubblePopAnimation(
+        let anim = BubblePopAnimation(
             color: color,
             size: size,
             position: position,

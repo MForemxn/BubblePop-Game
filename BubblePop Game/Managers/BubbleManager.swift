@@ -205,12 +205,14 @@ class BubbleManager: ObservableObject {
     /// Start the bubble movement timer
     func startBubbleMovement() {
         Timer.scheduledTimer(withTimeInterval: 0.016, repeats: true) { [weak self] timer in
-            guard let self = self, self.gameState.gameRunning else {
-                timer.invalidate()
-                return
+            Task { @MainActor in
+                guard let self = self, self.gameState.gameRunning else {
+                    timer.invalidate()
+                    return
+                }
+                
+                self.moveBubbles()
             }
-            
-            self.moveBubbles()
         }
     }
 
