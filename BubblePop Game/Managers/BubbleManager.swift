@@ -31,6 +31,9 @@ class BubbleManager: ObservableObject {
     
     /// Safe area insets from device
     private var safeArea: UIEdgeInsets = .zero
+    
+    /// Playable area bounds accounting for orientation and safe areas
+    private var playableArea: CGRect = .zero
 
     // MARK: - Initialization
     
@@ -58,13 +61,72 @@ class BubbleManager: ObservableObject {
     /// Update screen dimensions when device rotates
     @objc private func updateScreenDimensions() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            // Get the current screen bounds and safe area
             self.screenWidth = UIScreen.main.bounds.width
             self.screenHeight = UIScreen.main.bounds.height
             self.safeArea = UIApplication.shared.connectedScenes
                 .compactMap { ($0 as? UIWindowScene)?.keyWindow?.safeAreaInsets }
                 .first ?? .zero
+            
+            // Calculate playable area based on orientation
+            let isLandscape = self.screenWidth > self.screenHeight
+            if isLandscape {
+                // In landscape, account for side panel (25% of width) and safe areas
+                let leftInset = max(self.safeArea.left, 0)
+                let rightInset = max(self.safeArea.right, 0)
+                let topInset = max(self.safeArea.top, 0)
+                let bottomInset = max(self.safeArea.bottom, 0)
+                
+                // Side panel takes 25% of width from the left
+                let sidePanel = self.screenWidth * 0.25
+                
+                self.playableArea = CGRect(
+                    x: sidePanel + leftInset,
+                    y: topInset,
+                    width: self.screenWidth - sidePanel - leftInset - rightInset,
+                    height: self.screenHeight - topInset - bottomInset
+                )
+            } else {
+                // In portrait, just account for the safe areas and header
+                let leftInset = max(self.safeArea.left, 0)
+                let rightInset = max(self.safeArea.right, 0)
+                let topInset = max(self.safeArea.top, 0) + 120 // Header height
+                let bottomInset = max(self.safeArea.bottom, 0)
+                
+                self.playableArea = CGRect(
+                    x: leftInset,
+                    y: topInset,
+                    width: self.screenWidth - leftInset - rightInset,
+                    height: self.screenHeight - topInset - bottomInset
+                )
+            }
+            
+            // Update game state with new dimensions
             self.gameState.updateScreenSize(CGSize(width: self.screenWidth, height: self.screenHeight))
+            
+            // Adjust existing bubbles to fit within new playable area
+            self.adjustBubblesToPlayableArea()
         }
+    }
+    
+    /// Adjust existing bubbles to fit within the current playable area
+    private func adjustBubblesToPlayableArea() {
+        var updatedBubbles: [Bubble] = []
+        
+        for bubble in bubbles {
+            var newBubble = bubble
+            let radius = bubble.size / 2
+            
+            // Ensure bubble position is within playable area
+            let newX = min(max(playableArea.minX + radius, bubble.position.x), playableArea.maxX - radius)
+            let newY = min(max(playableArea.minY + radius, bubble.position.y), playableArea.maxY - radius)
+            
+            newBubble.position = CGPoint(x: newX, y: newY)
+            updatedBubbles.append(newBubble)
+        }
+        
+        bubbles = updatedBubbles
+        gameState.bubbles = bubbles
     }
 
     // MARK: - Bubble Creation and Management
@@ -121,54 +183,48 @@ class BubbleManager: ObservableObject {
 
     /// Create a single bubble with random properties
     private func createBubble() -> Bubble? {
-        guard screenWidth > 0, screenHeight > 0 else {
-            return nil
-        }
+        // Generate a random size based on settings
+        let minSize: CGFloat = gameSettings.minBubbleSize
+        let maxSize: CGFloat = gameSettings.maxBubbleSize
+        let bubbleSize = CGFloat.random(in: minSize...maxSize)
+        let radius = bubbleSize / 2
         
-        // Pick random color and set size
-        let bubbleColor = BubbleColor.randomBubbleColor()
-        let bubbleSize: CGFloat = 60
+        // Generate random position within playable area
+        let randomX = CGFloat.random(in: (playableArea.minX + radius)...(playableArea.maxX - radius))
+        let randomY = CGFloat.random(in: (playableArea.minY + radius)...(playableArea.maxY - radius))
+        let position = CGPoint(x: randomX, y: randomY)
         
-        // Calculate available space within screen bounds
-        let topPadding = 100.0 // For navigation bar and status bar
-        let padding: CGFloat = 10
-        
-        // Calculate boundaries ensuring bubble stays fully on screen
-        let minX = bubbleSize/2 + padding
-        let maxX = screenWidth - bubbleSize/2 - padding
-        let minY = bubbleSize/2 + topPadding
-        let maxY = screenHeight - bubbleSize/2 - padding
-        
-        // Check if we have valid screen space
-        if maxX <= minX || maxY <= minY {
-            return nil
-        }
-        
-        // Try to find a non-overlapping position (max 20 attempts)
-        for _ in 0..<20 {
-            // Generate random position
-            let xPosition = CGFloat.random(in: minX...maxX)
-            let yPosition = CGFloat.random(in: minY...maxY)
-            let position = CGPoint(x: xPosition, y: yPosition)
+        // Check for overlap with existing bubbles
+        for existingBubble in bubbles {
+            let distance = hypot(position.x - existingBubble.position.x, position.y - existingBubble.position.y)
+            let minDistance = radius + existingBubble.size / 2
             
-            // Check if position overlaps with existing bubbles
-            if !isPositionOverlapping(position, size: bubbleSize) {
-                // Create velocity based on selected speed setting
-                let baseSpeed = getBaseSpeedMultiplier()
-                let dx = CGFloat.random(in: -1...1) * baseSpeed
-                let dy = CGFloat.random(in: -1...1) * baseSpeed
-                
-                // Create and return the bubble
-                return Bubble(
-                    color: bubbleColor,
-                    size: bubbleSize,
-                    position: position,
-                    velocity: CGPoint(x: dx, y: dy)
-                )
+            // If bubbles overlap, try again later
+            if distance < minDistance {
+                return nil
             }
         }
         
-        return nil // Could not find non-overlapping position
+        // Generate random color
+        let bubbleColors: [BubbleColor] = [.red, .orange, .yellow, .green, .blue, .purple, .pink, .teal]
+        let randomColor = bubbleColors.randomElement() ?? .red
+        
+        // Generate random velocity based on difficulty
+        let speedMultiplier = gameSettings.bubbleSpeed
+        let angle = CGFloat.random(in: 0...(2 * .pi))
+        let speed = CGFloat.random(in: 50...150) * speedMultiplier
+        let velocityX = cos(angle) * speed
+        let velocityY = sin(angle) * speed
+        
+        // Create the bubble
+        return Bubble(
+            id: UUID(),
+            position: position,
+            size: bubbleSize,
+            color: randomColor,
+            velocity: CGPoint(x: velocityX, y: velocityY),
+            creationTime: Date()
+        )
     }
     
     /// Get the speed multiplier based on game settings
@@ -267,26 +323,26 @@ class BubbleManager: ObservableObject {
             let newX = bubble.position.x + bubble.velocity.x * deltaTime
             let newY = bubble.position.y + bubble.velocity.y * deltaTime
             
-            // Check for boundary collisions and bounce
+            // Check for boundary collisions within playable area
             let radius = bubble.size / 2
             var newVelocityX = bubble.velocity.x
             var newVelocityY = bubble.velocity.y
             
             // Horizontal bounds check
-            if newX - radius < 0 || newX + radius > screenWidth {
+            if newX - radius < playableArea.minX || newX + radius > playableArea.maxX {
                 newVelocityX = -newVelocityX
             }
             
             // Vertical bounds check
-            if newY - radius < 0 || newY + radius > screenHeight {
+            if newY - radius < playableArea.minY || newY + radius > playableArea.maxY {
                 newVelocityY = -newVelocityY
             }
             
             // Apply updated position and velocity
             newBubble.velocity = CGPoint(x: newVelocityX, y: newVelocityY)
             newBubble.position = CGPoint(
-                x: min(max(radius, newX), screenWidth - radius),
-                y: min(max(radius, newY), screenHeight - radius)
+                x: min(max(playableArea.minX + radius, newX), playableArea.maxX - radius),
+                y: min(max(playableArea.minY + radius, newY), playableArea.maxY - radius)
             )
             
             updatedBubbles.append(newBubble)

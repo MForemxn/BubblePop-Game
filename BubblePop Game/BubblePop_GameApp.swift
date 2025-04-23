@@ -21,6 +21,9 @@ struct BubblePop_GameApp: App {
         let settings = GameSettings()
         _gameSettings = StateObject(wrappedValue: settings)
         _gameManager = StateObject(wrappedValue: GameManager(gameSettings: settings))
+        
+        // Configure app to support all orientations
+        setupOrientationSupport()
     }
     
     var body: some Scene {
@@ -58,6 +61,24 @@ struct BubblePop_GameApp: App {
                     }
                 }
             }
+        }
+    }
+    
+    /// Configure the app to support all orientations
+    private func setupOrientationSupport() {
+        // Set the supported interface orientations
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+            windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .all))
+        }
+        
+        // Add observer for orientation changes to update UI
+        NotificationCenter.default.addObserver(
+            forName: UIDevice.orientationDidChangeNotification,
+            object: nil,
+            queue: .main
+        ) { _ in
+            // This will trigger layout updates across the app
+            // Any additional orientation-specific logic can be added here
         }
     }
 }

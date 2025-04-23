@@ -53,8 +53,14 @@ class GameState: ObservableObject {
     let gameSettings: GameSettings
     
     /// Current screen size for bubble positioning
-    private var screenSize: CGSize = .zero
+    @Published var screenSize: CGSize = .zero
     
+    /// Current device orientation
+    @Published var isLandscape: Bool = false
+    
+    /// Playable area accounting for layout in different orientations
+    @Published var playableArea: CGRect = .zero
+
     /// Combine cancellables for managing subscriptions
     private var cancellables = Set<AnyCancellable>()
 
@@ -168,6 +174,47 @@ class GameState: ObservableObject {
     /// Update the screen size when device rotates or view appears
     func updateScreenSize(_ size: CGSize) {
         screenSize = size
+        isLandscape = size.width > size.height
+        
+        // Calculate playable area based on orientation
+        if isLandscape {
+            // In landscape mode, account for side panel and safe areas
+            let safeArea = UIApplication.shared.connectedScenes
+                .compactMap { ($0 as? UIWindowScene)?.keyWindow?.safeAreaInsets }
+                .first ?? .zero
+            
+            let leftInset = max(safeArea.left, 0)
+            let rightInset = max(safeArea.right, 0)
+            let topInset = max(safeArea.top, 0)
+            let bottomInset = max(safeArea.bottom, 0)
+            
+            // Side panel takes 25% of width in landscape
+            let sidePanel = size.width * 0.25
+            
+            playableArea = CGRect(
+                x: sidePanel + leftInset,
+                y: topInset,
+                width: size.width - sidePanel - leftInset - rightInset,
+                height: size.height - topInset - bottomInset
+            )
+        } else {
+            // In portrait mode, account for header height and safe areas
+            let safeArea = UIApplication.shared.connectedScenes
+                .compactMap { ($0 as? UIWindowScene)?.keyWindow?.safeAreaInsets }
+                .first ?? .zero
+            
+            let leftInset = max(safeArea.left, 0)
+            let rightInset = max(safeArea.right, 0)
+            let topInset = max(safeArea.top, 0) + 120 // Header height
+            let bottomInset = max(safeArea.bottom, 0)
+            
+            playableArea = CGRect(
+                x: leftInset,
+                y: topInset,
+                width: size.width - leftInset - rightInset,
+                height: size.height - topInset - bottomInset
+            )
+        }
     }
 
     /// Update bubble positions based on velocity
@@ -180,18 +227,21 @@ class GameState: ObservableObject {
             let newY = bubble.position.y + bubble.velocity.y * CGFloat(deltaTime)
 
             // Simple boundary checking and bounce physics
-            if newX < bubble.size/2 || newX > screenSize.width - bubble.size/2 {
+            let radius = bubble.size/2
+            
+            // Check for boundary collisions within playable area
+            if newX - radius < playableArea.minX || newX + radius > playableArea.maxX {
                 newBubble.velocity.x = -bubble.velocity.x
             }
 
-            if newY < bubble.size/2 || newY > screenSize.height - bubble.size/2 {
+            if newY - radius < playableArea.minY || newY + radius > playableArea.maxY {
                 newBubble.velocity.y = -bubble.velocity.y
             }
 
-            // Apply the new position
+            // Apply the new position, constrained to playable area
             newBubble.position = CGPoint(
-                x: max(bubble.size/2, min(newX, screenSize.width - bubble.size/2)),
-                y: max(bubble.size/2, min(newY, screenSize.height - bubble.size/2))
+                x: max(playableArea.minX + radius, min(newX, playableArea.maxX - radius)),
+                y: max(playableArea.minY + radius, min(newY, playableArea.maxY - radius))
             )
 
             return newBubble

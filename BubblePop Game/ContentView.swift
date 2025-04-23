@@ -53,51 +53,53 @@ struct ContentView: View {
     // MARK: - Body
     
     var body: some View {
-        NavigationStack {
-            ZStack {
-                // Background gradient
-                LinearGradient(
-                    gradient: Gradient(colors: [Color.blue.opacity(0.3), Color.purple.opacity(0.3)]),
-                    startPoint: .top, endPoint: .bottom
-                )
-                .edgesIgnoringSafeArea(.all)
-                
-                // Display the current view
-                currentViewContent
-            }
-            .navigationTitle(navigationTitle)
-            .navigationBarBackButtonHidden(true)
-            .toolbar {
-                // Settings button in the top right
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        showSettings = true
-                    }) {
-                        Image(systemName: "gear")
-                    }
+        GeometryReader { geometry in
+            NavigationStack {
+                ZStack {
+                    // Background gradient
+                    LinearGradient(
+                        gradient: Gradient(colors: [Color.blue.opacity(0.3), Color.purple.opacity(0.3)]),
+                        startPoint: .top, endPoint: .bottom
+                    )
+                    .edgesIgnoringSafeArea(.all)
+                    
+                    // Display the current view
+                    currentViewContent(geometry: geometry)
                 }
-                
-                // Back button in the top left
-                ToolbarItem(placement: .navigationBarLeading) {
-                    if currentView != .nameEntry {
+                .navigationTitle(navigationTitle)
+                .navigationBarBackButtonHidden(true)
+                .toolbar {
+                    // Settings button in the top right
+                    ToolbarItem(placement: .navigationBarTrailing) {
                         Button(action: {
-                            if currentView == .game { gameState.resetGame() }
-                            currentView = .nameEntry
+                            showSettings = true
                         }) {
-                            HStack {
-                                Image(systemName: "arrow.left")
-                                Text("Back")
+                            Image(systemName: "gear")
+                        }
+                    }
+                    
+                    // Back button in the top left
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        if currentView != .nameEntry {
+                            Button(action: {
+                                if currentView == .game { gameState.resetGame() }
+                                currentView = .nameEntry
+                            }) {
+                                HStack {
+                                    Image(systemName: "arrow.left")
+                                    Text("Back")
+                                }
                             }
                         }
                     }
                 }
-            }
-            // Modal sheets
-            .sheet(isPresented: $showSettings) {
-                settingsSheet
-            }
-            .sheet(isPresented: $gameState.gameOver) {
-                gameOverSheet
+                // Modal sheets
+                .sheet(isPresented: $showSettings) {
+                    settingsSheet
+                }
+                .sheet(isPresented: $gameState.gameOver) {
+                    gameOverSheet
+                }
             }
         }
     }
@@ -105,16 +107,19 @@ struct ContentView: View {
     // MARK: - Computed Properties
     
     /// The current view to display based on navigation state
-    private var currentViewContent: some View {
+    private func currentViewContent(geometry: GeometryProxy) -> some View {
         Group {
+            let isLandscape = geometry.size.width > geometry.size.height
+            
             switch currentView {
             case .nameEntry:
-                NameEntryView(
-                    gameManager: gameManager,
-                    playerName: $gameState.playerName,
-                    onStartGame: { currentView = .game }
-                )
-                .environmentObject(gameManager)
+                if isLandscape {
+                    // Two-column layout for landscape
+                    landscapeNameEntryView(geometry: geometry)
+                } else {
+                    // Portrait layout
+                    portraitNameEntryView()
+                }
             case .game:
                 MainGameView(gameState: gameState, gameManager: gameManager)
                     .environmentObject(settings)
@@ -140,6 +145,83 @@ struct ContentView: View {
                 .environmentObject(gameManager)
             }
         }
+    }
+    
+    /// Portrait layout for the name entry view
+    private func portraitNameEntryView() -> some View {
+        NameEntryView(
+            gameManager: gameManager,
+            playerName: $gameState.playerName,
+            onStartGame: { currentView = .game }
+        )
+        .environmentObject(gameManager)
+    }
+    
+    /// Landscape layout for the name entry view (two columns)
+    private func landscapeNameEntryView(geometry: GeometryProxy) -> some View {
+        HStack(spacing: 20) {
+            // Left column - Name entry and start game
+            VStack {
+                Spacer()
+                // Game title
+                Text("BubblePop")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundColor(.blue)
+                
+                // Name input
+                TextField("Player Name", text: $gameState.playerName)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding(.horizontal)
+                    .frame(maxWidth: geometry.size.width * 0.35)
+                
+                // Start game button
+                Button(action: { currentView = .game }) {
+                    Text("Start Game")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(maxWidth: geometry.size.width * 0.3)
+                        .background(gameState.playerName.isEmpty ? Color.gray : Color.blue)
+                        .cornerRadius(10)
+                }
+                .disabled(gameState.playerName.isEmpty)
+                .padding(.bottom)
+                Spacer()
+            }
+            .frame(width: geometry.size.width * 0.5)
+            
+            // Right column - Navigation buttons
+            VStack(spacing: 20) {
+                Spacer()
+                
+                // High Scores button
+                Button(action: { currentView = .highScores }) {
+                    Text("High Scores")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(maxWidth: geometry.size.width * 0.3)
+                        .background(Color.orange)
+                        .cornerRadius(10)
+                }
+                
+                // Settings button
+                Button(action: { currentView = .settings }) {
+                    Text("Settings")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(maxWidth: geometry.size.width * 0.3)
+                        .background(Color.green)
+                        .cornerRadius(10)
+                }
+                
+                Spacer()
+            }
+            .frame(width: geometry.size.width * 0.5)
+        }
+        .environmentObject(gameManager)
     }
     
     /// Navigation title based on current view

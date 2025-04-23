@@ -36,19 +36,21 @@ struct MainGameView: View {
     
     var body: some View {
         GeometryReader { geometry in
+            let isLandscape = geometry.size.width > geometry.size.height
+            
             ZStack {
                 // Background color
                 Color(UIColor.systemBackground)
                     .ignoresSafeArea()
                 
-                // Game information header (player name, score, time)
-                gameInfoHeader
-                
                 // Game elements - only show when countdown is finished and game is running
                 if !showCountdown && gameState.gameRunning {
-                    gameBubbles
-                    scorePopups
-                    bubblePopAnimations
+                    // Adapt layout based on orientation
+                    if isLandscape {
+                        landscapeGameLayout(geometry: geometry)
+                    } else {
+                        portraitGameLayout(geometry: geometry)
+                    }
                 }
                 
                 // Countdown overlay - blocks all game interaction until countdown finishes
@@ -94,13 +96,56 @@ struct MainGameView: View {
         }
     }
     
-    // MARK: - View Components
+    // MARK: - Layout Components
+    
+    /// Portrait layout for the game
+    private func portraitGameLayout(geometry: GeometryProxy) -> some View {
+        VStack(spacing: 0) {
+            // Game information header (player name, score, time)
+            gameInfoHeader
+                .padding([.horizontal, .top])
+            
+            // Main game area
+            ZStack {
+                gameBubbles
+                scorePopups
+                bubblePopAnimations
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+    
+    /// Landscape layout for the game
+    private func landscapeGameLayout(geometry: GeometryProxy) -> some View {
+        HStack(spacing: 0) {
+            // Game information side panel
+            VStack {
+                gameInfoHeader
+                    .padding()
+                    .frame(width: geometry.size.width * 0.25)
+            }
+            .frame(width: geometry.size.width * 0.25)
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color(UIColor.secondarySystemBackground).opacity(0.8))
+                    .padding(5)
+            )
+            
+            // Main game area
+            ZStack {
+                gameBubbles
+                scorePopups
+                bubblePopAnimations
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
     
     /// Header view showing player info, score and time
     private var gameInfoHeader: some View {
-        VStack {
+        VStack(spacing: 10) {
+            // Player information
             HStack {
-                // Player information
                 VStack(alignment: .leading) {
                     Text("Player: \(gameState.playerName)")
                         .font(.headline)
@@ -119,15 +164,12 @@ struct MainGameView: View {
                         .foregroundColor(gameState.timeRemaining <= 10 ? .red : .primary)
                 }
             }
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(Color(UIColor.secondarySystemBackground))
-            )
-            .padding([.horizontal, .top])
-            
-            Spacer()
         }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color(UIColor.secondarySystemBackground))
+        )
     }
     
     /// Displays all active bubbles
