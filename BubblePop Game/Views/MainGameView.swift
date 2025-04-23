@@ -129,6 +129,7 @@ struct MainGameView: View {
             .onDisappear {
                 countdownTimer?.invalidate()
                 countdownTimer = nil
+                gameManager.endGame()
             }
             .onReceive(gameTimer) { _ in
                 if !showCountdown && gameState.gameRunning {
@@ -152,10 +153,7 @@ struct MainGameView: View {
             } else {
                 timer.invalidate()
                 showCountdown = false
-                gameState.gameRunning = true
-                gameManager.bubbleManager.createBubbles()
-                gameManager.bubbleManager.startBubbleMovement()
-                gameManager.soundManager.playBackgroundMusic()
+                gameManager.startGame()
             }
         }
     }

@@ -63,11 +63,12 @@ class GameManager: ObservableObject {
         // Initialize game
         gameState.gameRunning = true
         gameState.timeRemaining = gameState.gameSettings.gameTime
+        gameState.isGameActive = true
         
         // Create initial bubbles
         bubbleManager.createBubbles()
         
-        // Start bubble movement for extra functionality
+        // Start bubble movement
         bubbleManager.startBubbleMovement()
         
         // Play background music
@@ -121,6 +122,7 @@ class GameManager: ObservableObject {
     
     func endGame() {
         gameState.gameRunning = false
+        gameState.isGameActive = false
         
         // Stop bubble movement
         bubbleManager.stopBubbleMovement()
