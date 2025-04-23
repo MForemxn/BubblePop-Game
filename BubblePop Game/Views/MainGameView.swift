@@ -58,6 +58,8 @@ struct MainGameView: View {
                                 .padding(.vertical, 8)
                                 .background(Color(UIColor.systemBackground).opacity(0.95))
                         }
+                        .ignoresSafeArea(edges: .horizontal)
+                        .safeAreaPadding(.top)
                     }
                 }
                 
