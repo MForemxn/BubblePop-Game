@@ -76,24 +76,34 @@ class GameState: ObservableObject {
         timeRemaining = gameSettings.gameTime
 
         // Set up the game timer
+        timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            guard let self = self else { return }
+            guard let self = self, self.isGameActive else { return }
+            
             if self.timeRemaining > 0 {
                 self.timeRemaining -= 1
+                print("GameState timer tick: \(self.timeRemaining) seconds left")
                 self.updateBubbleVelocities()
             } else {
                 self.endGame()
             }
         }
+        
+        // Ensure timer runs even during scrolling
+        RunLoop.main.add(timer!, forMode: .common)
 
         // Set up bubble refresh timer
+        bubbleRefreshTimer?.invalidate()
         bubbleRefreshTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            guard let self = self else { return }
+            guard let self = self, self.isGameActive else { return }
+            
             Task { @MainActor in
                 self.bubbleManager.refreshBubbles()
             }
         }
         
+        // Ensure refresh timer runs even during scrolling
+        RunLoop.main.add(bubbleRefreshTimer!, forMode: .common)
 
         // Initial bubble setup
         refreshBubbles()

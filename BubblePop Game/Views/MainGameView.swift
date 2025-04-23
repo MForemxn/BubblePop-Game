@@ -123,7 +123,9 @@ struct MainGameView: View {
             .onAppear {
                 gameManager.gameState.updateScreenSize(geometry.size)
                 if !gameState.gameRunning {
-                    startCountdown()
+                    DispatchQueue.main.async {
+                        self.startCountdown()
+                    }
                 }
             }
             .onDisappear {
@@ -133,6 +135,7 @@ struct MainGameView: View {
             }
             .onReceive(gameTimer) { _ in
                 if !showCountdown && gameState.gameRunning {
+                    print("Game timer fired: timeRemaining = \(gameState.timeRemaining)")
                     gameManager.updateGame()
                 }
                 if gameState.timeRemaining <= 0 && !gameOverPopup && !showCountdown {
@@ -147,14 +150,30 @@ struct MainGameView: View {
         timeRemaining = 3
         
         countdownTimer?.invalidate()
-        countdownTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
-            if timeRemaining > 1 {
-                timeRemaining -= 1
-            } else {
-                timer.invalidate()
-                showCountdown = false
-                gameManager.startGame()
+        
+        DispatchQueue.main.async {
+            self.countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
+                guard let self = self else {
+                    timer.invalidate()
+                    return
+                }
+                
+                print("Countdown timer: \(self.timeRemaining)")
+                
+                if self.timeRemaining > 1 {
+                    self.timeRemaining -= 1
+                } else {
+                    timer.invalidate()
+                    self.countdownTimer = nil
+                    self.showCountdown = false
+                    
+                    DispatchQueue.main.async {
+                        self.gameManager.startGame()
+                    }
+                }
             }
+            
+            RunLoop.main.add(self.countdownTimer!, forMode: .common)
         }
     }
     

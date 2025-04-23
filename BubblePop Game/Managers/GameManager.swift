@@ -55,6 +55,7 @@ class GameManager: ObservableObject {
     }
     
     func startGame() {
+        // Set the current view to game view
         navigationPath.append(.game)
         
         // Reset game state
@@ -71,8 +72,13 @@ class GameManager: ObservableObject {
         // Start bubble movement
         bubbleManager.startBubbleMovement()
         
+        // Start the game's internal timer
+        gameState.startGame()
+        
         // Play background music
         soundManager.playBackgroundMusic()
+        
+        print("Game started: timeRemaining = \(gameState.timeRemaining), bubbles = \(gameState.bubbles.count)")
     }
     
     func updateGame() {
