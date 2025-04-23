@@ -183,9 +183,9 @@ class BubbleManager: ObservableObject {
 
     /// Create a single bubble with random properties
     private func createBubble() -> Bubble? {
-        // Generate a random size based on settings
-        let minSize: CGFloat = gameSettings.minBubbleSize
-        let maxSize: CGFloat = gameSettings.maxBubbleSize
+        // Generate a random size based on fixed values
+        let minSize: CGFloat = 40 // Default minimum bubble size
+        let maxSize: CGFloat = 80 // Default maximum bubble size
         let bubbleSize = CGFloat.random(in: minSize...maxSize)
         let radius = bubbleSize / 2
         
@@ -205,25 +205,24 @@ class BubbleManager: ObservableObject {
             }
         }
         
-        // Generate random color
-        let bubbleColors: [BubbleColor] = [.red, .orange, .yellow, .green, .blue, .purple, .pink, .teal]
-        let randomColor = bubbleColors.randomElement() ?? .red
+        // Generate random color using the existing implementation
+        let randomColor = BubbleColor.randomBubbleColor()
         
         // Generate random velocity based on difficulty
-        let speedMultiplier = gameSettings.bubbleSpeed
+        let speedMultiplier = getBaseSpeedMultiplier()
         let angle = CGFloat.random(in: 0...(2 * .pi))
-        let speed = CGFloat.random(in: 50...150) * speedMultiplier
+        let speed = CGFloat.random(in: 50...150) * speedMultiplier / 100
         let velocityX = cos(angle) * speed
         let velocityY = sin(angle) * speed
         
-        // Create the bubble
+        // Create the bubble with the correct initializer
         return Bubble(
             id: UUID(),
-            position: position,
-            size: bubbleSize,
             color: randomColor,
+            size: bubbleSize,
+            position: position,
             velocity: CGPoint(x: velocityX, y: velocityY),
-            creationTime: Date()
+            isActive: true
         )
     }
     
