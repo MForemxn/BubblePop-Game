@@ -208,7 +208,7 @@ class BubbleManager: ObservableObject {
         )
     }
     
-    /// Get the speed multiplier based on game settings
+    /// Get the speed multiplier based on game settings 
     private func getBaseSpeedMultiplier() -> CGFloat {
         switch gameSettings.bubbleSpeed {
         case .slow:
