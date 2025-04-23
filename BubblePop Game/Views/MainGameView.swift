@@ -45,21 +45,20 @@ struct MainGameView: View {
                 
                 // Game bubbles and animations use the full screen
                 if !showCountdown && gameState.gameRunning {
-                    // Game area uses the entire screen
-                    gameBubbles
-                    scorePopups
-                    bubblePopAnimations
-                    
-                    // Stats bar floats at the top
-                    VStack(spacing: 0) {
-                        gameInfoHeader
-                            .padding(.horizontal)
-                            .padding(.vertical, 8)
-                            .background(Color(UIColor.systemBackground).opacity(0.95))
+                    ZStack(alignment: .top) {
+                        // Game area uses the entire screen
+                        gameBubbles
+                        scorePopups
+                        bubblePopAnimations
                         
-                        Spacer()
+                        // Stats bar floats at the top
+                        VStack(spacing: 0) {
+                            gameInfoHeader
+                                .padding(.horizontal)
+                                .padding(.vertical, 8)
+                                .background(Color(UIColor.systemBackground).opacity(0.95))
+                        }
                     }
-                    .safeAreaInset(edge: .top) { Color.clear }
                 }
                 
                 // Countdown overlay - blocks all game interaction until countdown finishes

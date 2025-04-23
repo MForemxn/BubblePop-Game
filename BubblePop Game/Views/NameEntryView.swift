@@ -140,7 +140,7 @@ struct NameEntryView: View {
                     // Nickname input
                     TextField("Nickname", text: $nickname)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .frame(width: min(300, geometry.size.width * 0.4))
+                        .frame(width: min(300, geometry.size.width * 0.35))
                         .onChange(of: nickname) { oldValue, newValue in
                             playerName = newValue
                         }
@@ -151,12 +151,13 @@ struct NameEntryView: View {
                     
                     TextField("Player Name", text: $playerName)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .frame(width: min(300, geometry.size.width * 0.4))
+                        .frame(width: min(300, geometry.size.width * 0.35))
                 }
                 
                 Spacer()
             }
             .frame(width: geometry.size.width * 0.5)
+            .padding(.horizontal)
             
             // Right column - buttons
             VStack(spacing: 20) {
@@ -169,7 +170,7 @@ struct NameEntryView: View {
                         .foregroundColor(.white)
                         .padding(.vertical, 12)
                         .padding(.horizontal, 20)
-                        .frame(width: min(200, geometry.size.width * 0.3))
+                        .frame(width: min(200, geometry.size.width * 0.25))
                         .background(playerName.isEmpty ? Color.gray : Color.blue)
                         .cornerRadius(10)
                 }
@@ -182,7 +183,7 @@ struct NameEntryView: View {
                         .foregroundColor(.white)
                         .padding(.vertical, 12)
                         .padding(.horizontal, 20)
-                        .frame(width: min(200, geometry.size.width * 0.3))
+                        .frame(width: min(200, geometry.size.width * 0.25))
                         .background(Color.green)
                         .cornerRadius(10)
                 }
@@ -194,7 +195,7 @@ struct NameEntryView: View {
                         .foregroundColor(.white)
                         .padding(.vertical, 12)
                         .padding(.horizontal, 20)
-                        .frame(width: min(200, geometry.size.width * 0.3))
+                        .frame(width: min(200, geometry.size.width * 0.25))
                         .background(Color.orange)
                         .cornerRadius(10)
                 }
@@ -202,8 +203,10 @@ struct NameEntryView: View {
                 Spacer()
             }
             .frame(width: geometry.size.width * 0.5)
+            .padding(.horizontal)
         }
-        .ignoresSafeArea()
+        .safeAreaInset(edge: .leading) { Color.clear }
+        .safeAreaInset(edge: .trailing) { Color.clear }
         .onAppear {
             // When authenticated with GameKit, set nickname initially to GameKit name
             if gameKitManager.isAuthenticated && nickname.isEmpty {
