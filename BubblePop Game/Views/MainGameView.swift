@@ -55,11 +55,8 @@ struct MainGameView: View {
                         VStack(spacing: 0) {
                             gameInfoHeader
                                 .padding(.horizontal)
-                                .padding(.vertical, 8)
-                                .background(Color(UIColor.systemBackground).opacity(0.95))
+                                .padding(.top, geometry.safeAreaInsets.top + 8)
                         }
-                        .ignoresSafeArea(edges: .horizontal)
-                        .safeAreaPadding(.top, 20)
                     }
                 }
                 
@@ -136,7 +133,6 @@ struct MainGameView: View {
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color(UIColor.secondarySystemBackground).opacity(0.95))
         )
-        .frame(maxWidth: .infinity)
         .padding(.horizontal, 16)
         .padding(.top, 8)
     }
