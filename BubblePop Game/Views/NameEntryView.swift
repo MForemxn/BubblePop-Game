@@ -30,6 +30,23 @@ struct NameEntryView: View {
     // MARK: - Body
     
     var body: some View {
+        GeometryReader { geometry in
+            let isLandscape = geometry.size.width > geometry.size.height
+            
+            if isLandscape {
+                // Two-column layout for landscape
+                landscapeLayout(geometry: geometry)
+            } else {
+                // Regular layout for portrait
+                portraitLayout
+            }
+        }
+    }
+    
+    // MARK: - Layout Views
+    
+    // Portrait layout - stacked vertically
+    private var portraitLayout: some View {
         VStack(spacing: 20) {
             // Game title
             Text("BubblePop")
@@ -57,6 +74,98 @@ struct NameEntryView: View {
             }
         }
         .padding()
+        .onAppear {
+            // When authenticated with GameKit, set nickname initially to GameKit name
+            if gameKitManager.isAuthenticated && nickname.isEmpty {
+                nickname = gameKitManager.playerName
+                playerName = nickname
+            }
+        }
+    }
+    
+    // Landscape layout - side-by-side columns
+    private func landscapeLayout(geometry: GeometryProxy) -> some View {
+        HStack(spacing: 30) {
+            // Left column - title and name input
+            VStack(spacing: 20) {
+                Spacer()
+                
+                // Game title
+                Text("BubblePop")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundColor(.blue)
+                
+                // Name input section
+                if gameKitManager.isAuthenticated {
+                    // Game Center banner
+                    HStack {
+                        Image(systemName: "gamecontroller.fill")
+                            .foregroundColor(.green)
+                        Text("Game Center: \(gameKitManager.playerName)")
+                            .font(.headline)
+                    }
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.green.opacity(0.1))
+                    )
+                    
+                    // Nickname input
+                    TextField("Nickname", text: $nickname)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding(.horizontal)
+                        .frame(maxWidth: 300)
+                        .onChange(of: nickname) { oldValue, newValue in
+                            playerName = newValue
+                        }
+                } else {
+                    // Regular name input
+                    Text("Enter Your Name")
+                        .font(.headline)
+                    
+                    TextField("Player Name", text: $playerName)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding(.horizontal)
+                        .frame(maxWidth: 300)
+                }
+                
+                Spacer()
+            }
+            .frame(width: geometry.size.width * 0.5)
+            .padding()
+            
+            // Right column - buttons
+            VStack(spacing: 20) {
+                Spacer()
+                
+                // Start game button
+                Button(action: startGame) {
+                    Text("Start Game")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(maxWidth: 200)
+                        .background(playerName.isEmpty ? Color.gray : Color.blue)
+                        .cornerRadius(10)
+                }
+                .disabled(playerName.isEmpty)
+                
+                // Settings button
+                NavigationLink(value: "settings") {
+                    buttonLabel(text: "Settings", color: .green)
+                }
+                
+                // High scores button
+                NavigationLink(value: "highScores") {
+                    buttonLabel(text: "High Scores", color: .orange)
+                }
+                
+                Spacer()
+            }
+            .frame(width: geometry.size.width * 0.5)
+            .padding()
+        }
         .onAppear {
             // When authenticated with GameKit, set nickname initially to GameKit name
             if gameKitManager.isAuthenticated && nickname.isEmpty {

@@ -45,11 +45,20 @@ struct MainGameView: View {
                 
                 // Game elements - only show when countdown is finished and game is running
                 if !showCountdown && gameState.gameRunning {
-                    // Adapt layout based on orientation
-                    if isLandscape {
-                        landscapeGameLayout(geometry: geometry)
-                    } else {
-                        portraitGameLayout(geometry: geometry)
+                    VStack(spacing: 0) {
+                        // Stats bar always at the top in both orientations
+                        gameInfoHeader
+                            .padding(.horizontal)
+                            .padding(.top, 5)
+                            .frame(height: 80)
+                        
+                        // Game area uses the entire remaining screen
+                        ZStack {
+                            gameBubbles
+                            scorePopups
+                            bubblePopAnimations
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
                 }
                 
@@ -96,73 +105,28 @@ struct MainGameView: View {
         }
     }
     
-    // MARK: - Layout Components
-    
-    /// Portrait layout for the game
-    private func portraitGameLayout(geometry: GeometryProxy) -> some View {
-        VStack(spacing: 0) {
-            // Game information header (player name, score, time)
-            gameInfoHeader
-                .padding([.horizontal, .top])
-            
-            // Main game area
-            ZStack {
-                gameBubbles
-                scorePopups
-                bubblePopAnimations
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
-    }
-    
-    /// Landscape layout for the game
-    private func landscapeGameLayout(geometry: GeometryProxy) -> some View {
-        HStack(spacing: 0) {
-            // Game information side panel
-            VStack {
-                gameInfoHeader
-                    .padding()
-                    .frame(width: geometry.size.width * 0.25)
-            }
-            .frame(width: geometry.size.width * 0.25)
-            .background(
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(Color(UIColor.secondarySystemBackground).opacity(0.8))
-                    .padding(5)
-            )
-            
-            // Main game area
-            ZStack {
-                gameBubbles
-                scorePopups
-                bubblePopAnimations
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
-    }
+    // MARK: - View Components
     
     /// Header view showing player info, score and time
     private var gameInfoHeader: some View {
-        VStack(spacing: 10) {
+        HStack {
             // Player information
-            HStack {
-                VStack(alignment: .leading) {
-                    Text("Player: \(gameState.playerName)")
-                        .font(.headline)
-                    Text("Highest Score: \(gameState.highestScore)")
-                        .font(.subheadline)
-                }
-                
-                Spacer()
-                
-                // Score and time information
-                VStack(alignment: .trailing) {
-                    Text("Score: \(gameState.currentScore)")
-                        .font(.headline)
-                    Text("Time: \(gameState.timeRemaining)")
-                        .font(.subheadline)
-                        .foregroundColor(gameState.timeRemaining <= 10 ? .red : .primary)
-                }
+            VStack(alignment: .leading) {
+                Text("Player: \(gameState.playerName)")
+                    .font(.headline)
+                Text("Highest Score: \(gameState.highestScore)")
+                    .font(.subheadline)
+            }
+            
+            Spacer()
+            
+            // Score and time information
+            VStack(alignment: .trailing) {
+                Text("Score: \(gameState.currentScore)")
+                    .font(.headline)
+                Text("Time: \(gameState.timeRemaining)")
+                    .font(.subheadline)
+                    .foregroundColor(gameState.timeRemaining <= 10 ? .red : .primary)
             }
         }
         .padding()

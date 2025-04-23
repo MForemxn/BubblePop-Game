@@ -68,38 +68,19 @@ class BubbleManager: ObservableObject {
                 .compactMap { ($0 as? UIWindowScene)?.keyWindow?.safeAreaInsets }
                 .first ?? .zero
             
-            // Calculate playable area based on orientation
-            let isLandscape = self.screenWidth > self.screenHeight
-            if isLandscape {
-                // In landscape, account for side panel (25% of width) and safe areas
-                let leftInset = max(self.safeArea.left, 0)
-                let rightInset = max(self.safeArea.right, 0)
-                let topInset = max(self.safeArea.top, 0)
-                let bottomInset = max(self.safeArea.bottom, 0)
-                
-                // Side panel takes 25% of width from the left
-                let sidePanel = self.screenWidth * 0.25
-                
-                self.playableArea = CGRect(
-                    x: sidePanel + leftInset,
-                    y: topInset,
-                    width: self.screenWidth - sidePanel - leftInset - rightInset,
-                    height: self.screenHeight - topInset - bottomInset
-                )
-            } else {
-                // In portrait, just account for the safe areas and header
-                let leftInset = max(self.safeArea.left, 0)
-                let rightInset = max(self.safeArea.right, 0)
-                let topInset = max(self.safeArea.top, 0) + 120 // Header height
-                let bottomInset = max(self.safeArea.bottom, 0)
-                
-                self.playableArea = CGRect(
-                    x: leftInset,
-                    y: topInset,
-                    width: self.screenWidth - leftInset - rightInset,
-                    height: self.screenHeight - topInset - bottomInset
-                )
-            }
+            // Calculate playable area - use entire screen except for top stats bar
+            let headerHeight: CGFloat = 80 // Height of the stats bar
+            let topInset = max(self.safeArea.top, 0) + headerHeight
+            let leftInset = max(self.safeArea.left, 0)
+            let rightInset = max(self.safeArea.right, 0)
+            let bottomInset = max(self.safeArea.bottom, 0)
+            
+            self.playableArea = CGRect(
+                x: leftInset,
+                y: topInset,
+                width: self.screenWidth - leftInset - rightInset,
+                height: self.screenHeight - topInset - bottomInset
+            )
             
             // Update game state with new dimensions
             self.gameState.updateScreenSize(CGSize(width: self.screenWidth, height: self.screenHeight))

@@ -176,45 +176,23 @@ class GameState: ObservableObject {
         screenSize = size
         isLandscape = size.width > size.height
         
-        // Calculate playable area based on orientation
-        if isLandscape {
-            // In landscape mode, account for side panel and safe areas
-            let safeArea = UIApplication.shared.connectedScenes
-                .compactMap { ($0 as? UIWindowScene)?.keyWindow?.safeAreaInsets }
-                .first ?? .zero
-            
-            let leftInset = max(safeArea.left, 0)
-            let rightInset = max(safeArea.right, 0)
-            let topInset = max(safeArea.top, 0)
-            let bottomInset = max(safeArea.bottom, 0)
-            
-            // Side panel takes 25% of width in landscape
-            let sidePanel = size.width * 0.25
-            
-            playableArea = CGRect(
-                x: sidePanel + leftInset,
-                y: topInset,
-                width: size.width - sidePanel - leftInset - rightInset,
-                height: size.height - topInset - bottomInset
-            )
-        } else {
-            // In portrait mode, account for header height and safe areas
-            let safeArea = UIApplication.shared.connectedScenes
-                .compactMap { ($0 as? UIWindowScene)?.keyWindow?.safeAreaInsets }
-                .first ?? .zero
-            
-            let leftInset = max(safeArea.left, 0)
-            let rightInset = max(safeArea.right, 0)
-            let topInset = max(safeArea.top, 0) + 120 // Header height
-            let bottomInset = max(safeArea.bottom, 0)
-            
-            playableArea = CGRect(
-                x: leftInset,
-                y: topInset,
-                width: size.width - leftInset - rightInset,
-                height: size.height - topInset - bottomInset
-            )
-        }
+        // Calculate playable area - use entire screen except for top stats bar
+        let safeArea = UIApplication.shared.connectedScenes
+            .compactMap { ($0 as? UIWindowScene)?.keyWindow?.safeAreaInsets }
+            .first ?? .zero
+        
+        let headerHeight: CGFloat = 80 // Height of the stats bar
+        let topInset = max(safeArea.top, 0) + headerHeight
+        let leftInset = max(safeArea.left, 0)
+        let rightInset = max(safeArea.right, 0)
+        let bottomInset = max(safeArea.bottom, 0)
+        
+        playableArea = CGRect(
+            x: leftInset,
+            y: topInset,
+            width: size.width - leftInset - rightInset,
+            height: size.height - topInset - bottomInset
+        )
     }
 
     /// Update bubble positions based on velocity
