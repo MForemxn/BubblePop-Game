@@ -149,15 +149,12 @@ struct MainGameView: View {
         showCountdown = true
         timeRemaining = 3
         
+        // Invalidate any existing timer
         countdownTimer?.invalidate()
         
+        // Create a new timer on the main thread
         DispatchQueue.main.async {
-            self.countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
-                guard let self = self else {
-                    timer.invalidate()
-                    return
-                }
-                
+            self.countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
                 print("Countdown timer: \(self.timeRemaining)")
                 
                 if self.timeRemaining > 1 {
@@ -167,12 +164,14 @@ struct MainGameView: View {
                     self.countdownTimer = nil
                     self.showCountdown = false
                     
+                    // Start the game on the main thread
                     DispatchQueue.main.async {
                         self.gameManager.startGame()
                     }
                 }
             }
             
+            // Ensure timer fires by adding to main run loop
             RunLoop.main.add(self.countdownTimer!, forMode: .common)
         }
     }
