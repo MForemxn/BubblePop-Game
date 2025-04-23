@@ -12,9 +12,10 @@ struct MainGameView: View {
     @State private var showCountdown = true
     @State private var timeRemaining = 3
     @State private var gameOverPopup = false
+    @State private var countdownTimer: Timer?
     
     @ObservedObject var gameManager: GameManager
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    let gameTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     var body: some View {
         GeometryReader { geometry in
@@ -52,12 +53,11 @@ struct MainGameView: View {
                     Spacer()
                 }
                 
-                // Bubbles (removed duplicate ForEach)
+                // Bubbles
                 ForEach(gameState.bubbles) { bubble in
                     BubbleView(bubble: bubble)
                         .position(bubble.position)
                         .onTapGesture {
-                            // Pop the bubble
                             if let index = gameState.bubbles.firstIndex(where: { $0.id == bubble.id }) {
                                 gameManager.popBubble(bubble)
                             }
@@ -122,14 +122,19 @@ struct MainGameView: View {
             }
             .onAppear {
                 gameManager.gameState.updateScreenSize(geometry.size)
-                startCountdown()
-            }
-            .onReceive(timer) { _ in
-                if !showCountdown && gameManager.gameState.gameRunning {
-                    gameManager.updateGame()
-                    print("Timer tick: \(gameManager.gameState.timeRemaining)")
+                if !gameState.gameRunning {
+                    startCountdown()
                 }
-                if gameManager.gameState.timeRemaining <= 0 && !gameOverPopup && !showCountdown {
+            }
+            .onDisappear {
+                countdownTimer?.invalidate()
+                countdownTimer = nil
+            }
+            .onReceive(gameTimer) { _ in
+                if !showCountdown && gameState.gameRunning {
+                    gameManager.updateGame()
+                }
+                if gameState.timeRemaining <= 0 && !gameOverPopup && !showCountdown {
                     gameEnd()
                 }
             }
@@ -140,25 +145,24 @@ struct MainGameView: View {
         showCountdown = true
         timeRemaining = 3
         
-        Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { countdownTimer in
+        countdownTimer?.invalidate()
+        countdownTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
             if timeRemaining > 1 {
                 timeRemaining -= 1
             } else {
-                countdownTimer.invalidate()
+                timer.invalidate()
                 showCountdown = false
-                gameManager.startGame()
-                
-                // Ensure we have bubbles after starting the game
-                if gameManager.gameState.bubbles.isEmpty {
-                    gameManager.bubbleManager.createBubbles()
-                }
+                gameState.gameRunning = true
+                gameManager.bubbleManager.createBubbles()
+                gameManager.bubbleManager.startBubbleMovement()
+                gameManager.soundManager.playBackgroundMusic()
             }
         }
     }
     
     func gameEnd() {
         gameManager.endGame()
-        gameManager.gameState.gameRunning = false
+        gameState.gameRunning = false
         gameOverPopup = true
     }
 }
