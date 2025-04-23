@@ -176,8 +176,8 @@ class GameState: ObservableObject {
             var newBubble = bubble
 
             // Update position based on velocity
-            var newX = bubble.position.x + bubble.velocity.x * CGFloat(deltaTime)
-            var newY = bubble.position.y + bubble.velocity.y * CGFloat(deltaTime)
+            let newX = bubble.position.x + bubble.velocity.x * CGFloat(deltaTime)
+            let newY = bubble.position.y + bubble.velocity.y * CGFloat(deltaTime)
 
             // Simple boundary checking and bounce physics
             if newX < bubble.size/2 || newX > screenSize.width - bubble.size/2 {

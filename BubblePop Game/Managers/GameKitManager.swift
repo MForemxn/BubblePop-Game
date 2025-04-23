@@ -41,9 +41,12 @@ class GameKitManager: NSObject, ObservableObject {
     }
     
     func reportScore(_ score: Int, leaderboardID: String) {
-        let leaderboardScore = GKLeaderboardScore(player: GKLocalPlayer.local, value: Int64(score), context: 0)
-        
-        GKLeaderboard.submitScore(leaderboardScore, context: 0, player: GKLocalPlayer.local, leaderboardIDs: [leaderboardID]) { error in
+        GKLeaderboard.submitScore(
+            Int64(score),
+            context: 0,
+            player: GKLocalPlayer.local,
+            leaderboardIDs: [leaderboardID]
+        ) { error in
             if let error = error {
                 print("Error reporting score: \(error.localizedDescription)")
             } else {
