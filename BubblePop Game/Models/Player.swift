@@ -10,15 +10,30 @@ import Foundation
 import GameKit
 
 struct Player: Identifiable, Codable {
-    let id = UUID()
+    let id: UUID
     let name: String
     var score: Int
     let date: Date
     let gameKitPlayerId: String
     let gameSettings: GameSettingsData
     
+    enum CodingKeys: String, CodingKey {
+        case id, name, score, date, gameKitPlayerId, gameSettings
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        name = try container.decode(String.self, forKey: .name)
+        score = try container.decode(Int.self, forKey: .score)
+        date = try container.decode(Date.self, forKey: .date)
+        gameKitPlayerId = try container.decode(String.self, forKey: .gameKitPlayerId)
+        gameSettings = try container.decode(GameSettingsData.self, forKey: .gameSettings)
+    }
+    
     // Default initialization for non-GameKit players (for backward compatibility)
     init(name: String, score: Int, date: Date) {
+        self.id = UUID()
         self.name = name
         self.score = score
         self.date = date
@@ -28,6 +43,7 @@ struct Player: Identifiable, Codable {
     
     // Initialize with GameKit player and settings
     init(name: String, score: Int, date: Date, gameKitPlayerId: String, gameSettings: GameSettingsData) {
+        self.id = UUID()
         self.name = name
         self.score = score
         self.date = date
