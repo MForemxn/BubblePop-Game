@@ -36,23 +36,23 @@ struct BubblePop_GameApp: App {
                     }
                 )
                 // Define destinations for navigation
-                .navigationDestination(for: AppView.self) { view in
-                    switch view {
-                    case .game:
+                .navigationDestination(for: String.self) { destination in
+                    switch destination {
+                    case "game":
                         // Main game screen
                         MainGameView(gameState: gameManager.gameState, gameManager: gameManager)
-                    case .settings:
+                    case "settings":
                         // Settings screen
                         SettingsView(gameSettings: gameSettings, onBack: {
                             gameManager.goBack()
                         })
-                    case .highScores:
+                    case "highScores":
                         // High scores screen
                         HighScoresView(
                             leaderboardManager: gameManager.leaderboardManager,
                             onBack: { gameManager.goBack() }
                         )
-                    case .nameEntry:
+                    default:
                         // This case shouldn't be reached through navigation
                         EmptyView()
                     }

@@ -15,15 +15,13 @@ import GameKit
 class GameManager: ObservableObject {
     // MARK: - Properties
     
-    // Define a local enum for navigation to avoid ambiguity
-    enum NavDestination {
-        case game
-        case highScores
-        case settings
-    }
+    /// Navigation path for app navigation using string identifiers
+    @Published var navigationPath: [String] = []
     
-    /// Navigation path for app navigation
-    @Published var navigationPath: [AppView] = []
+    // Navigation destination constants
+    private let gameDestination = "game"
+    private let highScoresDestination = "highScores"
+    private let settingsDestination = "settings"
     
     /// Main game state object that holds all game data
     @Published var gameState: GameState!
@@ -83,7 +81,7 @@ class GameManager: ObservableObject {
     /// Start the game by initializing state and navigating to game screen
     func startGame() {
         // Set the current view to game view
-        navigationPath.append(toAppView(.game))
+        navigationPath.append(gameDestination)
         
         // Initialize game state but don't start running yet
         gameState.initializeGame()
@@ -189,12 +187,12 @@ class GameManager: ObservableObject {
     
     /// Navigate to high scores screen
     func showHighScores() {
-        navigationPath.append(toAppView(.highScores))
+        navigationPath.append(highScoresDestination)
     }
     
     /// Navigate to settings screen
     func showSettings() {
-        navigationPath.append(toAppView(.settings))
+        navigationPath.append(settingsDestination)
     }
     
     /// Go back to previous screen
@@ -207,14 +205,5 @@ class GameManager: ObservableObject {
         gameState.resetGame()
         scoreManager.resetScore()
         bubbleManager.clearBubbles()
-    }
-    
-    // Method to convert our NavDestination to AppView
-    private func toAppView(_ dest: NavDestination) -> AppView {
-        switch dest {
-        case .game: return .game
-        case .highScores: return .highScores
-        case .settings: return .settings
-        }
     }
 }

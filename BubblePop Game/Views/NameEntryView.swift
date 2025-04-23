@@ -48,11 +48,11 @@ struct NameEntryView: View {
             startGameButton
             
             // Navigation buttons
-            NavigationLink(value: AppView.settings) {
+            NavigationLink(value: "settings") {
                 buttonLabel(text: "Settings", color: .green)
             }
             
-            NavigationLink(value: AppView.highScores) {
+            NavigationLink(value: "highScores") {
                 buttonLabel(text: "High Scores", color: .orange)
             }
         }
