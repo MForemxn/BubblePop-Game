@@ -110,7 +110,7 @@ struct MainGameView: View {
     private var gameInfoHeader: some View {
         HStack {
             // Player information
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text("Player: \(gameState.playerName)")
                     .font(.headline)
                 Text("Highest Score: \(gameState.highestScore)")
@@ -120,7 +120,7 @@ struct MainGameView: View {
             Spacer()
             
             // Score and time information
-            VStack(alignment: .trailing) {
+            VStack(alignment: .trailing, spacing: 4) {
                 Text("Score: \(gameState.currentScore)")
                     .font(.headline)
                 Text("Time: \(gameState.timeRemaining)")
@@ -128,11 +128,13 @@ struct MainGameView: View {
                     .foregroundColor(gameState.timeRemaining <= 10 ? .red : .primary)
             }
         }
-        .padding(10)
+        .padding(12)
         .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color(UIColor.secondarySystemBackground).opacity(0.9))
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(UIColor.secondarySystemBackground).opacity(0.95))
         )
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
     }
     
     /// Displays all active bubbles
@@ -173,15 +175,15 @@ struct MainGameView: View {
     
     /// Game over popup view
     private var gameOverView: some View {
-        VStack {
+        VStack(spacing: 16) {
             Text("Game Over!")
                 .font(.largeTitle)
                 .fontWeight(.bold)
-                .padding()
+                .padding(.top, 24)
             
             Text("Your score: \(gameState.currentScore)")
                 .font(.title2)
-                .padding()
+                .padding(.horizontal)
             
             Button(action: {
                 gameOverPopup = false
@@ -190,13 +192,15 @@ struct MainGameView: View {
                 Text("View High Scores")
                     .font(.headline)
                     .foregroundColor(.white)
-                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
                     .background(Color.blue)
                     .cornerRadius(10)
             }
-            .padding()
+            .padding(.horizontal, 24)
+            .padding(.bottom, 24)
         }
-        .frame(width: 300, height: 250)
+        .frame(width: 300)
         .background(Color(UIColor.systemBackground))
         .cornerRadius(20)
         .shadow(radius: 10)

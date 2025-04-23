@@ -47,14 +47,15 @@ struct NameEntryView: View {
     
     // Portrait layout - stacked vertically
     private var portraitLayout: some View {
-        VStack(spacing: 20) {
-            Spacer(minLength: 20)
+        VStack(spacing: 24) {
+            Spacer(minLength: 40)
             
             // Game title
             Text("BubblePop")
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .foregroundColor(.blue)
+                .padding(.bottom, 8)
             
             // Name input section - different based on Game Center authentication
             if gameKitManager.isAuthenticated {
@@ -68,39 +69,40 @@ struct NameEntryView: View {
                 Text("Start Game")
                     .font(.headline)
                     .foregroundColor(.white)
-                    .padding(.vertical, 12)
-                    .padding(.horizontal, 20)
-                    .frame(width: 200)
+                    .frame(maxWidth: 280)
+                    .padding(.vertical, 14)
                     .background(playerName.isEmpty ? Color.gray : Color.blue)
-                    .cornerRadius(10)
+                    .cornerRadius(12)
             }
             .disabled(playerName.isEmpty)
+            .padding(.top, 8)
             
             // Navigation buttons
-            NavigationLink(value: "settings") {
-                Text("Settings")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .padding(.vertical, 12)
-                    .padding(.horizontal, 20)
-                    .frame(width: 200)
-                    .background(Color.green)
-                    .cornerRadius(10)
+            VStack(spacing: 16) {
+                NavigationLink(value: "settings") {
+                    Text("Settings")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: 280)
+                        .padding(.vertical, 14)
+                        .background(Color.green)
+                        .cornerRadius(12)
+                }
+                
+                NavigationLink(value: "highScores") {
+                    Text("High Scores")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: 280)
+                        .padding(.vertical, 14)
+                        .background(Color.orange)
+                        .cornerRadius(12)
+                }
             }
             
-            NavigationLink(value: "highScores") {
-                Text("High Scores")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .padding(.vertical, 12)
-                    .padding(.horizontal, 20)
-                    .frame(width: 200)
-                    .background(Color.orange)
-                    .cornerRadius(10)
-            }
-            
-            Spacer(minLength: 20)
+            Spacer(minLength: 40)
         }
+        .padding(.horizontal, 20)
         .ignoresSafeArea()
         .onAppear {
             // When authenticated with GameKit, set nickname initially to GameKit name
@@ -220,28 +222,30 @@ struct NameEntryView: View {
     
     /// View for Game Center authenticated users
     private var gameCenterUserView: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 16) {
             // Game Center status banner
-            HStack {
+            HStack(spacing: 8) {
                 Image(systemName: "gamecontroller.fill")
                     .foregroundColor(.green)
                 Text("Game Center: \(gameKitManager.playerName)")
                     .font(.headline)
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 8)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
             .background(
-                RoundedRectangle(cornerRadius: 8)
+                RoundedRectangle(cornerRadius: 10)
                     .fill(Color.green.opacity(0.1))
             )
+            .padding(.bottom, 8)
             
             // Nickname input
             Text("Enter Your Nickname")
                 .font(.headline)
+                .padding(.top, 8)
             
             TextField("Nickname", text: $nickname)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
-                .frame(width: 280)
+                .frame(maxWidth: 280)
                 .onChange(of: nickname) { oldValue, newValue in
                     playerName = newValue
                 }
@@ -250,20 +254,21 @@ struct NameEntryView: View {
     
     /// View for regular users without Game Center
     private var regularUserView: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 16) {
             // Game Center status banner
             Text("Game Center: Not Signed In")
                 .font(.headline)
                 .foregroundColor(.orange)
-                .padding(.bottom, 5)
+                .padding(.vertical, 8)
             
             // Name input
             Text("Enter Your Name")
                 .font(.headline)
+                .padding(.top, 8)
             
             TextField("Player Name", text: $playerName)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
-                .frame(width: 280)
+                .frame(maxWidth: 280)
         }
     }
     
