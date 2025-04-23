@@ -10,6 +10,13 @@ import SwiftUI
 import Combine
 import GameKit
 
+/// Enum defining the main navigation destinations in the app
+enum AppView {
+    case game
+    case highScores
+    case settings
+}
+
 /// Main manager class that coordinates the game flow and state
 @MainActor
 class GameManager: ObservableObject {
