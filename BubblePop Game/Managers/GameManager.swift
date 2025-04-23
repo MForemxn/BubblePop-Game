@@ -10,20 +10,13 @@ import SwiftUI
 import Combine
 import GameKit
 
-/// Enum defining the main navigation destinations in the app
-enum AppView {
-    case game
-    case highScores
-    case settings
-}
-
 /// Main manager class that coordinates the game flow and state
 @MainActor
 class GameManager: ObservableObject {
     // MARK: - Properties
     
     /// Navigation path for app navigation
-    @Published var navigationPath: [AppView] = []
+    @Published var navigationPath: [BubblePop_Game.AppView] = []
     
     /// Main game state object that holds all game data
     @Published var gameState: GameState!
@@ -83,7 +76,7 @@ class GameManager: ObservableObject {
     /// Start the game by initializing state and navigating to game screen
     func startGame() {
         // Set the current view to game view
-        navigationPath.append(.game)
+        navigationPath.append(BubblePop_Game.AppView.game)
         
         // Initialize game state but don't start running yet
         gameState.initializeGame()
@@ -189,12 +182,12 @@ class GameManager: ObservableObject {
     
     /// Navigate to high scores screen
     func showHighScores() {
-        navigationPath.append(.highScores)
+        navigationPath.append(BubblePop_Game.AppView.highScores)
     }
     
     /// Navigate to settings screen
     func showSettings() {
-        navigationPath.append(.settings)
+        navigationPath.append(BubblePop_Game.AppView.settings)
     }
     
     /// Go back to previous screen
