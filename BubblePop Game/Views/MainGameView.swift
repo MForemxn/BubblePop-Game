@@ -51,13 +51,15 @@ struct MainGameView: View {
                     bubblePopAnimations
                     
                     // Stats bar floats at the top
-                    VStack {
+                    VStack(spacing: 0) {
                         gameInfoHeader
                             .padding(.horizontal)
-                            .padding(.top, 5)
+                            .padding(.vertical, 8)
+                            .background(Color(UIColor.systemBackground).opacity(0.95))
                         
                         Spacer()
                     }
+                    .safeAreaInset(edge: .top) { Color.clear }
                 }
                 
                 // Countdown overlay - blocks all game interaction until countdown finishes
