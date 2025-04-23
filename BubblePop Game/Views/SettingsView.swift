@@ -57,7 +57,7 @@ struct SettingsView: View {
                         .keyboardType(.numberPad)
                         .multilineTextAlignment(.trailing)
                         .frame(width: 80)
-                        .onChange(of: gameTime) { _ in
+                        .onChange(of: gameTime) { oldValue, newValue in
                             validateAndSave()
                         }
                 }
@@ -70,7 +70,7 @@ struct SettingsView: View {
                         .keyboardType(.numberPad)
                         .multilineTextAlignment(.trailing)
                         .frame(width: 80)
-                        .onChange(of: maxBubbles) { _ in
+                        .onChange(of: maxBubbles) { oldValue, newValue in
                             validateAndSave()
                         }
                 }
@@ -80,14 +80,14 @@ struct SettingsView: View {
             Section(header: Text("Sound")) {
                 // Sound effects toggle
                 Toggle("Sound Effects", isOn: $gameSettings.soundEnabled)
-                    .onChange(of: gameSettings.soundEnabled) { _ in
+                    .onChange(of: gameSettings.soundEnabled) { oldValue, newValue in
                         gameSettings.saveSettings()
                         onSettingsChanged()
                     }
                 
                 // Music toggle
                 Toggle("Background Music", isOn: $gameSettings.musicEnabled)
-                    .onChange(of: gameSettings.musicEnabled) { _ in
+                    .onChange(of: gameSettings.musicEnabled) { oldValue, newValue in
                         gameSettings.saveSettings()
                         onSettingsChanged()
                     }
@@ -105,7 +105,7 @@ struct SettingsView: View {
                     }
                     .pickerStyle(SegmentedPickerStyle())
                     .frame(width: 180)
-                    .onChange(of: gameSettings.bubbleSpeed) { _ in
+                    .onChange(of: gameSettings.bubbleSpeed) { oldValue, newValue in
                         gameSettings.saveSettings()
                         onSettingsChanged()
                     }

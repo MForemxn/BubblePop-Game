@@ -93,7 +93,7 @@ struct NameEntryView: View {
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding(.horizontal)
                 .frame(maxWidth: 300)
-                .onChange(of: nickname) { newValue in
+                .onChange(of: nickname) { oldValue, newValue in
                     playerName = newValue
                 }
         }
