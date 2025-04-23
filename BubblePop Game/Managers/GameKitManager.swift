@@ -42,7 +42,7 @@ class GameKitManager: NSObject, ObservableObject {
     
     func reportScore(_ score: Int, leaderboardID: String) {
         GKLeaderboard.submitScore(
-            Int64(score),
+            score,
             context: 0,
             player: GKLocalPlayer.local,
             leaderboardIDs: [leaderboardID]
