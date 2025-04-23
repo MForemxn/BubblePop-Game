@@ -53,39 +53,49 @@ struct MainGameView: View {
                     Spacer()
                 }
                 
-                // Bubbles
-                ForEach(gameState.bubbles) { bubble in
-                    BubbleView(bubble: bubble)
-                        .position(bubble.position)
-                        .onTapGesture {
-                            if let index = gameState.bubbles.firstIndex(where: { $0.id == bubble.id }) {
-                                gameManager.popBubble(bubble)
+                // Bubbles - only show when countdown is finished
+                if !showCountdown {
+                    ForEach(gameState.bubbles) { bubble in
+                        BubbleView(bubble: bubble)
+                            .position(bubble.position)
+                            .onTapGesture {
+                                if let index = gameState.bubbles.firstIndex(where: { $0.id == bubble.id }) {
+                                    gameManager.popBubble(bubble)
+                                }
                             }
-                        }
+                    }
                 }
                 
                 // Score popup animations
-                ForEach(gameState.animationManager.scorePopups) { popup in
-                    Text(popup.text)
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(popup.color)
-                        .position(popup.position)
-                        .opacity(popup.opacity)
-                        .scaleEffect(popup.scale)
+                if !showCountdown {
+                    ForEach(gameState.animationManager.scorePopups) { popup in
+                        Text(popup.text)
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(popup.color)
+                            .position(popup.position)
+                            .opacity(popup.opacity)
+                            .scaleEffect(popup.scale)
+                    }
                 }
                 
                 // Bubble pop animations
-                ForEach(gameState.animationManager.bubblePopAnimations) { anim in
-                    Circle()
-                        .fill(anim.color)
-                        .frame(width: anim.size, height: anim.size)
-                        .position(anim.position)
-                        .opacity(anim.opacity)
-                        .scaleEffect(anim.scale)
+                if !showCountdown {
+                    ForEach(gameState.animationManager.bubblePopAnimations) { anim in
+                        Circle()
+                            .fill(anim.color)
+                            .frame(width: anim.size, height: anim.size)
+                            .position(anim.position)
+                            .opacity(anim.opacity)
+                            .scaleEffect(anim.scale)
+                    }
                 }
                 
-                // Countdown overlay
+                // Countdown overlay - blocks all game interaction
                 if showCountdown {
+                    Color.black.opacity(0.7)
+                        .ignoresSafeArea()
+                        .allowsHitTesting(true)
+                    
                     CountdownView(timeRemaining: $timeRemaining)
                 }
                 
@@ -123,9 +133,7 @@ struct MainGameView: View {
             .onAppear {
                 gameManager.gameState.updateScreenSize(geometry.size)
                 if !gameState.gameRunning {
-                    DispatchQueue.main.async {
-                        self.startCountdown()
-                    }
+                    startCountdown()
                 }
             }
             .onDisappear {
@@ -135,7 +143,6 @@ struct MainGameView: View {
             }
             .onReceive(gameTimer) { _ in
                 if !showCountdown && gameState.gameRunning {
-                    print("Game timer fired: timeRemaining = \(gameState.timeRemaining)")
                     gameManager.updateGame()
                 }
                 if gameState.timeRemaining <= 0 && !gameOverPopup && !showCountdown {
@@ -164,7 +171,7 @@ struct MainGameView: View {
                     self.countdownTimer = nil
                     self.showCountdown = false
                     
-                    // Start the game on the main thread
+                    // Start the game on the main thread after countdown
                     DispatchQueue.main.async {
                         self.gameManager.startGame()
                     }
