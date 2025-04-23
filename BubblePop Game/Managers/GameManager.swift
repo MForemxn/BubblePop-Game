@@ -15,8 +15,15 @@ import GameKit
 class GameManager: ObservableObject {
     // MARK: - Properties
     
+    // Define a local enum for navigation to avoid ambiguity
+    enum NavDestination {
+        case game
+        case highScores
+        case settings
+    }
+    
     /// Navigation path for app navigation
-    @Published var navigationPath: [BubblePop_Game.AppView] = []
+    @Published var navigationPath: [AppView] = []
     
     /// Main game state object that holds all game data
     @Published var gameState: GameState!
@@ -76,7 +83,7 @@ class GameManager: ObservableObject {
     /// Start the game by initializing state and navigating to game screen
     func startGame() {
         // Set the current view to game view
-        navigationPath.append(BubblePop_Game.AppView.game)
+        navigationPath.append(toAppView(.game))
         
         // Initialize game state but don't start running yet
         gameState.initializeGame()
@@ -182,12 +189,12 @@ class GameManager: ObservableObject {
     
     /// Navigate to high scores screen
     func showHighScores() {
-        navigationPath.append(BubblePop_Game.AppView.highScores)
+        navigationPath.append(toAppView(.highScores))
     }
     
     /// Navigate to settings screen
     func showSettings() {
-        navigationPath.append(BubblePop_Game.AppView.settings)
+        navigationPath.append(toAppView(.settings))
     }
     
     /// Go back to previous screen
@@ -200,5 +207,14 @@ class GameManager: ObservableObject {
         gameState.resetGame()
         scoreManager.resetScore()
         bubbleManager.clearBubbles()
+    }
+    
+    // Method to convert our NavDestination to AppView
+    private func toAppView(_ dest: NavDestination) -> AppView {
+        switch dest {
+        case .game: return .game
+        case .highScores: return .highScores
+        case .settings: return .settings
+        }
     }
 }
