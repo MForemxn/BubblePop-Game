@@ -133,6 +133,7 @@ struct MainGameView: View {
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color(UIColor.secondarySystemBackground).opacity(0.95))
         )
+        .frame(maxWidth: .infinity)
         .padding(.horizontal, 16)
         .padding(.top, 8)
     }
@@ -200,10 +201,11 @@ struct MainGameView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 24)
         }
-        .frame(width: 300)
+        .frame(width: min(300, UIScreen.main.bounds.width - 40))
         .background(Color(UIColor.systemBackground))
         .cornerRadius(20)
         .shadow(radius: 10)
+        .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height / 2)
     }
     
     // MARK: - Methods
