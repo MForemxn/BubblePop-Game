@@ -46,7 +46,7 @@ class SoundManager {
     }
     
     func playSound(named filename: String, fileExtension: String = "wav") {
-        guard isEnabled else { return }
+        guard isEnabled && gameSettings.soundEnabled else { return }
         
         guard let url = Bundle.main.url(forResource: filename, withExtension: fileExtension) else {
             print("Sound file \(filename).\(fileExtension) not found")
@@ -69,6 +69,8 @@ class SoundManager {
     }
     
     func playSoundForBubble(_ color: BubbleColor) {
+        guard gameSettings.soundEnabled else { return }
+        
         switch color {
         case .red:
             playSound(named: "pop_red")
