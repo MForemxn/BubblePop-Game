@@ -25,10 +25,6 @@ class SoundManager {
             print("Failed to set up audio session: \(error)")
         }
         
-        // Observe settings changes
-        gameSettings.objectWillChange.sink { [weak self] _ in
-            self?.handleSettingsChange()
-        }
     }
     
     private func handleSettingsChange() {
