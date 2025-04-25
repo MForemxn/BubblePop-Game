@@ -36,7 +36,7 @@ struct MainGameView: View {
     
     var body: some View {
         GeometryReader { geometry in
-            let isLandscape = geometry.size.width > geometry.size.height
+            // let isLandscape = geometry.size.width > geometry.size.height
             
             ZStack {
                 // Background color

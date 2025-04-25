@@ -90,32 +90,6 @@ class AnimationManager: ObservableObject {
     }
 }
 
-// MARK: - Optional View Modifiers (Retained for Future Use)
-struct ScoreAnimation: ViewModifier {
-    let score: Int
-    @State private var offset: CGFloat = -50
-    @State private var opacity: Double = 1.0
-    
-    func body(content: Content) -> some View {
-        ZStack {
-            content
-            
-            Text("+\(score)")
-                .font(.title)
-                .bold()
-                .foregroundColor(.yellow)
-                .shadow(color: .black, radius: 1, x: 1, y: 1)
-                .offset(y: offset)
-                .opacity(opacity)
-                .onAppear {
-                    withAnimation(.easeOut(duration: 0.7)) {
-                        offset = -100
-                        opacity = 0
-                    }
-                }
-        }
-    }
-}
 
 struct CountdownAnimation: ViewModifier {
     @State private var scale: CGFloat = 2.0
@@ -135,9 +109,6 @@ struct CountdownAnimation: ViewModifier {
 }
 
 extension View {
-    func scorePopEffect(score: Int) -> some View {
-        self.modifier(ScoreAnimation(score: score))
-    }
     
     func countdownEffect() -> some View {
         self.modifier(CountdownAnimation())
