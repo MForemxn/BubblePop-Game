@@ -6,6 +6,16 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		91996EB52DBB96A000E8E28D /* pop_green.wav in Resources */ = {isa = PBXBuildFile; fileRef = 91996EB22DBB96A000E8E28D /* pop_green.wav */; };
+		91996EB62DBB96A000E8E28D /* pop_blue.wav in Resources */ = {isa = PBXBuildFile; fileRef = 91996EB02DBB96A000E8E28D /* pop_blue.wav */; };
+		91996EB72DBB96A000E8E28D /* pop_black.wav in Resources */ = {isa = PBXBuildFile; fileRef = 91996EAF2DBB96A000E8E28D /* pop_black.wav */; };
+		91996EB82DBB96A000E8E28D /* pop_pink.wav in Resources */ = {isa = PBXBuildFile; fileRef = 91996EB32DBB96A000E8E28D /* pop_pink.wav */; };
+		91996EB92DBB96A000E8E28D /* pop_red.wav in Resources */ = {isa = PBXBuildFile; fileRef = 91996EB42DBB96A000E8E28D /* pop_red.wav */; };
+		91996EBA2DBB96A000E8E28D /* background_music.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 91996EAE2DBB96A000E8E28D /* background_music.mp3 */; };
+		91996EBB2DBB96A000E8E28D /* pop_general.wav in Resources */ = {isa = PBXBuildFile; fileRef = 91996EB12DBB96A000E8E28D /* pop_general.wav */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		91C4E07A2D96098B003C27A1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,6 +34,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		91996EAE2DBB96A000E8E28D /* background_music.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = background_music.mp3; sourceTree = "<group>"; };
+		91996EAF2DBB96A000E8E28D /* pop_black.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = pop_black.wav; sourceTree = "<group>"; };
+		91996EB02DBB96A000E8E28D /* pop_blue.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = pop_blue.wav; sourceTree = "<group>"; };
+		91996EB12DBB96A000E8E28D /* pop_general.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = pop_general.wav; sourceTree = "<group>"; };
+		91996EB22DBB96A000E8E28D /* pop_green.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = pop_green.wav; sourceTree = "<group>"; };
+		91996EB32DBB96A000E8E28D /* pop_pink.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = pop_pink.wav; sourceTree = "<group>"; };
+		91996EB42DBB96A000E8E28D /* pop_red.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = pop_red.wav; sourceTree = "<group>"; };
 		91C4E0692D960989003C27A1 /* BubblePop Game.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "BubblePop Game.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		91C4E0792D96098B003C27A1 /* BubblePop GameTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "BubblePop GameTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		91C4E0832D96098B003C27A1 /* BubblePop GameUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "BubblePop GameUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -85,9 +102,24 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		91996EAD2DBB949000E8E28D /* Sounds */ = {
+			isa = PBXGroup;
+			children = (
+				91996EAE2DBB96A000E8E28D /* background_music.mp3 */,
+				91996EAF2DBB96A000E8E28D /* pop_black.wav */,
+				91996EB02DBB96A000E8E28D /* pop_blue.wav */,
+				91996EB12DBB96A000E8E28D /* pop_general.wav */,
+				91996EB22DBB96A000E8E28D /* pop_green.wav */,
+				91996EB32DBB96A000E8E28D /* pop_pink.wav */,
+				91996EB42DBB96A000E8E28D /* pop_red.wav */,
+			);
+			path = Sounds;
+			sourceTree = "<group>";
+		};
 		91C4E0602D960989003C27A1 = {
 			isa = PBXGroup;
 			children = (
+				91996EAD2DBB949000E8E28D /* Sounds */,
 				91C4E06B2D960989003C27A1 /* BubblePop Game */,
 				91C4E07C2D96098B003C27A1 /* BubblePop GameTests */,
 				91C4E0862D96098B003C27A1 /* BubblePop GameUITests */,
@@ -225,6 +257,13 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				91996EB52DBB96A000E8E28D /* pop_green.wav in Resources */,
+				91996EB62DBB96A000E8E28D /* pop_blue.wav in Resources */,
+				91996EB72DBB96A000E8E28D /* pop_black.wav in Resources */,
+				91996EB82DBB96A000E8E28D /* pop_pink.wav in Resources */,
+				91996EB92DBB96A000E8E28D /* pop_red.wav in Resources */,
+				91996EBA2DBB96A000E8E28D /* background_music.mp3 in Resources */,
+				91996EBB2DBB96A000E8E28D /* pop_general.wav in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
