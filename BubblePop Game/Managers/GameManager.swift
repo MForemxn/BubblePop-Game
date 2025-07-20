@@ -20,6 +20,8 @@ class GameManager: ObservableObject {
     
     // Navigation destination constants
     private let gameDestination = "game"
+    private let multiplayerGameDestination = "multiplayerGame"
+    private let inviteFriendsDestination = "inviteFriends"
     private let highScoresDestination = "highScores"
     private let settingsDestination = "settings"
     
@@ -193,6 +195,25 @@ class GameManager: ObservableObject {
     /// Navigate to settings screen
     func showSettings() {
         navigationPath.append(settingsDestination)
+    }
+    
+    /// Navigate to invite friends screen
+    func showInviteFriends() {
+        navigationPath.append(inviteFriendsDestination)
+    }
+    
+    /// Start multiplayer game
+    func startMultiplayerGame(with recipients: [String]) {
+        navigationPath.append(multiplayerGameDestination)
+        
+        // Initialize game state but don't start running yet
+        gameState.initializeGame()
+        
+        // Create initial bubbles but don't start movement yet
+        bubbleManager.createBubbles()
+        
+        // Start multiplayer match
+        MultiplayerManager.shared.startMultiplayerMatch(inviteRecipients: recipients)
     }
     
     /// Go back to previous screen

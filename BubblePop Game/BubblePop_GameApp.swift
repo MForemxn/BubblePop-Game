@@ -44,6 +44,23 @@ struct BubblePop_GameApp: App {
                     case "game":
                         // Main game screen
                         MainGameView(gameState: gameManager.gameState, gameManager: gameManager)
+                    case "multiplayerGame":
+                        // Multiplayer game screen
+                        MultiplayerGameView(
+                            gameState: gameManager.gameState,
+                            gameManager: gameManager,
+                            multiplayerManager: MultiplayerManager.shared
+                        )
+                    case "inviteFriends":
+                        // Invite friends screen
+                        InviteFriendsView(
+                            gameSettings: gameSettings,
+                            playerName: gameManager.gameState.playerName,
+                            onStartBattle: { recipients in
+                                gameManager.startMultiplayerGame(with: recipients)
+                            },
+                            onBack: { gameManager.goBack() }
+                        )
                     case "settings":
                         // Settings screen
                         SettingsView(gameSettings: gameSettings, onBack: {
@@ -59,6 +76,46 @@ struct BubblePop_GameApp: App {
                         // This case shouldn't be reached through navigation
                         EmptyView()
                     }
+                }
+            }
+        }
+        .onOpenURL { url in
+            handleIncomingURL(url)
+        }
+    }
+    
+    /// Handle incoming URL for battle invitations
+    private func handleIncomingURL(_ url: URL) {
+        let messageManager = MessageManager.shared
+        
+        if let inviteData = messageManager.parseInvitationLink(url) {
+            // Handle battle invitation
+            DispatchQueue.main.async {
+                // Show alert to user about incoming invitation
+                let alert = UIAlertController(
+                    title: "Battle Invitation!",
+                    message: "\(inviteData.playerName) has challenged you to a bubble popping battle!\n\nDifficulty: \(inviteData.difficulty.capitalized)\nDuration: \(inviteData.gameTime) seconds",
+                    preferredStyle: .alert
+                )
+                
+                alert.addAction(UIAlertAction(title: "Accept Challenge", style: .default) { _ in
+                    // Accept the challenge and start multiplayer game
+                    self.gameManager.startMultiplayerGame(with: [])
+                })
+                
+                alert.addAction(UIAlertAction(title: "Decline", style: .cancel))
+                
+                // Present the alert
+                if let windowScene = UIApplication.shared.connectedScenes
+                    .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
+                   let rootViewController = windowScene.windows.first?.rootViewController {
+                    
+                    var topController = rootViewController
+                    while let presentedController = topController.presentedViewController {
+                        topController = presentedController
+                    }
+                    
+                    topController.present(alert, animated: true)
                 }
             }
         }

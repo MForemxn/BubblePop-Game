@@ -93,8 +93,24 @@ struct SettingsView: View {
                     }
             }
             
-            // Bubble speed setting
-            Section(header: Text("Bubble Appearance")) {
+            // Game difficulty and bubble settings
+            Section(header: Text("Game Difficulty")) {
+                HStack {
+                    Text("Difficulty")
+                    Spacer()
+                    Picker("Difficulty", selection: $gameSettings.difficulty) {
+                        Text("Easy").tag(GameSettings.Difficulty.easy)
+                        Text("Medium").tag(GameSettings.Difficulty.medium)
+                        Text("Hard").tag(GameSettings.Difficulty.hard)
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+                    .frame(width: 180)
+                    .onChange(of: gameSettings.difficulty) { oldValue, newValue in
+                        gameSettings.saveSettings()
+                        onSettingsChanged()
+                    }
+                }
+                
                 HStack {
                     Text("Bubble Speed")
                     Spacer()
