@@ -23,5 +23,16 @@
         <string>UIInterfaceOrientationLandscapeRight</string>
         <string>UIInterfaceOrientationPortraitUpsideDown</string>
     </array>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>bubblepop.battle.invite</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>bubblepop</string>
+            </array>
+        </dict>
+    </array>
 </dict>
 </plist>

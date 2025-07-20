@@ -65,17 +65,38 @@ struct NameEntryView: View {
                     regularUserView
                 }
                 
-                // Start game button
-                Button(action: startGame) {
-                    Text("Start Game")
+                // Game mode buttons
+                VStack(spacing: 16) {
+                    // Single Player
+                    Button(action: startGame) {
+                        HStack {
+                            Image(systemName: "person.fill")
+                            Text("Single Player")
+                        }
                         .font(.headline)
                         .foregroundColor(.white)
                         .frame(maxWidth: min(280, geometry.size.width - 40))
                         .padding(.vertical, 14)
                         .background(playerName.isEmpty ? Color.gray : Color.blue)
                         .cornerRadius(12)
+                    }
+                    .disabled(playerName.isEmpty)
+                    
+                    // Battle Mode
+                    Button(action: startBattleMode) {
+                        HStack {
+                            Image(systemName: "person.2.fill")
+                            Text("Battle Mode")
+                        }
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: min(280, geometry.size.width - 40))
+                        .padding(.vertical, 14)
+                        .background(playerName.isEmpty ? Color.gray : Color.purple)
+                        .cornerRadius(12)
+                    }
+                    .disabled(playerName.isEmpty)
                 }
-                .disabled(playerName.isEmpty)
                 .padding(.top, 8)
                 
                 // Navigation buttons
@@ -163,16 +184,35 @@ struct NameEntryView: View {
             VStack(spacing: 20) {
                 Spacer()
                 
-                // Start game button
+                // Single Player button
                 Button(action: startGame) {
-                    Text("Start Game")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .padding(.vertical, 12)
-                        .padding(.horizontal, 20)
-                        .frame(width: min(200, geometry.size.width * 0.25))
-                        .background(playerName.isEmpty ? Color.gray : Color.blue)
-                        .cornerRadius(10)
+                    HStack {
+                        Image(systemName: "person.fill")
+                        Text("Single Player")
+                    }
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 20)
+                    .frame(width: min(200, geometry.size.width * 0.25))
+                    .background(playerName.isEmpty ? Color.gray : Color.blue)
+                    .cornerRadius(10)
+                }
+                .disabled(playerName.isEmpty)
+                
+                // Battle Mode button
+                Button(action: startBattleMode) {
+                    HStack {
+                        Image(systemName: "person.2.fill")
+                        Text("Battle Mode")
+                    }
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 20)
+                    .frame(width: min(200, geometry.size.width * 0.25))
+                    .background(playerName.isEmpty ? Color.gray : Color.purple)
+                    .cornerRadius(10)
                 }
                 .disabled(playerName.isEmpty)
                 
@@ -295,6 +335,27 @@ struct NameEntryView: View {
                 date: Date()
             )
             onStartGame()
+        }
+    }
+    
+    /// Handle battle mode button press
+    private func startBattleMode() {
+        // If using Game Center, ensure we have a nickname or default to GameKit name
+        if gameKitManager.isAuthenticated && nickname.isEmpty {
+            // Default to Game Center name if no nickname is provided
+            nickname = gameKitManager.playerName
+            playerName = nickname
+        }
+        
+        if !playerName.isEmpty {
+            // Update the player in gameState
+            gameManager.gameState.player = Player(
+                name: playerName,
+                score: 0,
+                date: Date()
+            )
+            // Navigate to invite friends screen
+            gameManager.showInviteFriends()
         }
     }
 }

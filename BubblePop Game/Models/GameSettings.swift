@@ -35,12 +35,24 @@ class GameSettings: ObservableObject {
             saveSettings()
         }
     }
+    @Published var difficulty: Difficulty {
+        didSet {
+            saveSettings()
+        }
+    }
 
     // MARK: - Bubble Speed Enum
     enum BubbleSpeed: String, CaseIterable {
         case slow
         case medium
         case fast
+    }
+    
+    // MARK: - Difficulty Enum
+    enum Difficulty: String, CaseIterable {
+        case easy
+        case medium
+        case hard
     }
 
     // MARK: - Default Values
@@ -49,6 +61,7 @@ class GameSettings: ObservableObject {
     private let defaultSoundEnabled = true
     private let defaultMusicEnabled = true
     private let defaultBubbleSpeed: BubbleSpeed = .medium
+    private let defaultDifficulty: Difficulty = .medium
 
     // MARK: - UserDefaults Keys
     private let gameTimeKey = "GameTime"
@@ -56,6 +69,7 @@ class GameSettings: ObservableObject {
     private let soundEnabledKey = "SoundEnabled"
     private let musicEnabledKey = "MusicEnabled"
     private let bubbleSpeedKey = "BubbleSpeed"
+    private let difficultyKey = "Difficulty"
 
     // MARK: - Initialization
     init() {
@@ -66,6 +80,8 @@ class GameSettings: ObservableObject {
         let savedMusicEnabled = UserDefaults.standard.object(forKey: musicEnabledKey) as? Bool ?? defaultMusicEnabled
         let savedBubbleSpeedRaw = UserDefaults.standard.string(forKey: bubbleSpeedKey)
         let savedBubbleSpeed = savedBubbleSpeedRaw.flatMap { BubbleSpeed(rawValue: $0) } ?? defaultBubbleSpeed
+        let savedDifficultyRaw = UserDefaults.standard.string(forKey: difficultyKey)
+        let savedDifficulty = savedDifficultyRaw.flatMap { Difficulty(rawValue: $0) } ?? defaultDifficulty
 
         // Initialize all properties
         self.gameTime = savedGameTime == 0 ? defaultGameTime : savedGameTime
@@ -73,6 +89,7 @@ class GameSettings: ObservableObject {
         self.soundEnabled = savedSoundEnabled
         self.musicEnabled = savedMusicEnabled
         self.bubbleSpeed = savedBubbleSpeed
+        self.difficulty = savedDifficulty
     }
 
     // MARK: - Methods
@@ -82,6 +99,7 @@ class GameSettings: ObservableObject {
         UserDefaults.standard.set(soundEnabled, forKey: soundEnabledKey)
         UserDefaults.standard.set(musicEnabled, forKey: musicEnabledKey)
         UserDefaults.standard.set(bubbleSpeed.rawValue, forKey: bubbleSpeedKey)
+        UserDefaults.standard.set(difficulty.rawValue, forKey: difficultyKey)
         UserDefaults.standard.synchronize()
     }
 
@@ -91,6 +109,7 @@ class GameSettings: ObservableObject {
         soundEnabled = defaultSoundEnabled
         musicEnabled = defaultMusicEnabled
         bubbleSpeed = defaultBubbleSpeed
+        difficulty = defaultDifficulty
         saveSettings()
     }
 }

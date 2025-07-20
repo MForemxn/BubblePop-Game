@@ -9,6 +9,11 @@ import Foundation
 import SwiftUI
 import Combine
 
+// MARK: - Notification Extensions
+extension Notification.Name {
+    static let gameTimeExpired = Notification.Name("gameTimeExpired")
+}
+
 /// Stores and manages the current state of the game
 class GameState: ObservableObject {
     // MARK: - Properties
@@ -294,6 +299,9 @@ class GameState: ObservableObject {
 
         bubbleRefreshTimer?.invalidate()
         bubbleRefreshTimer = nil
+
+        // Post notification for multiplayer games
+        NotificationCenter.default.post(name: .gameTimeExpired, object: nil)
 
         // Save the player's score
         let player = Player(name: playerName, score: currentScore, date: Date())
